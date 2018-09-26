@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teachy.coins.mapper.KlineDAO">
+    <resultMap id="BaseResultMap" type="com.teachy.coins.model.Kbase">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="website" jdbcType="VARCHAR" property="website"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="time_long" jdbcType="INTEGER" property="timeLong"/>
+        <result column="volume" jdbcType="DOUBLE" property="volume"/>
+        <result column="close" jdbcType="DOUBLE" property="close"/>
+        <result column="open" jdbcType="DOUBLE" property="open"/>
+        <result column="high" jdbcType="DOUBLE" property="high"/>
+        <result column="low" jdbcType="DOUBLE" property="low"/>
+        <result column="time_str" jdbcType="VARCHAR" property="timeStr"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.teachy.coins.model.Kbase" statementType="STATEMENT">
+    insert into ${tableName} (id,website, `type`, `name`,
+      time_long, volume, `close`, 
+      `open`, high, low, time_str
+      )
+    values (${id},${website}, ${type}, ${name},
+      ${timeLong}, ${volume}, ${close},
+      ${open}, ${high}, ${low}, ${timeStr}
+      )
+  </insert>
+
+</mapper>

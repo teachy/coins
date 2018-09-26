@@ -249,7 +249,7 @@ public class StockRestApiImpl implements IStockRestApi {
 
 
 	@Override
-	public String candlestick2(String curr_a,String curr_b,int group_sec,int range_hour) throws HttpException, IOException {
+	public String candlestick2(String curr_a,String curr_b,int group_sec,double range_hour) throws HttpException, IOException {
 		HttpUtilManager httpUtil = HttpUtilManager.getInstance();
 		String param = "group_sec="+group_sec+"&range_hour="+range_hour;
 		String tem = curr_a+"_"+curr_b;

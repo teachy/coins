@@ -42,6 +42,6 @@ public interface IStockRestApi {
 
 	public String withdraw(String currency, String amount, String address) throws HttpException, IOException;
 
-	public String candlestick2(String curr_a,String curr_b,int group_sec,int range_hour) throws HttpException, IOException;
+	public String candlestick2(String curr_a,String curr_b,int group_sec,double range_hour) throws HttpException, IOException;
 
 }
