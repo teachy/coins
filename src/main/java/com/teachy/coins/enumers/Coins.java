@@ -3,7 +3,7 @@ package com.teachy.coins.enumers;
 public enum Coins {
 	BTC("btc"),
 	ETH("eth"),
-	GEMS("gems");
+	GEM("gem");
 	private final String name;
 
 	private Coins(String name) {

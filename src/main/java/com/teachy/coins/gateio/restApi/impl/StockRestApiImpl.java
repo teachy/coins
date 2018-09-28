@@ -247,15 +247,17 @@ public class StockRestApiImpl implements IStockRestApi {
 		return result;
 	}
 
-
 	@Override
-	public String candlestick2(String curr_a,String curr_b,int group_sec,double range_hour) throws HttpException, IOException {
+	public String candlestick2(String curr_a, String curr_b, int group_sec, double range_hour, String type) throws
+		HttpException,
+		IOException {
 		HttpUtilManager httpUtil = HttpUtilManager.getInstance();
-		String param = "group_sec="+group_sec+"&range_hour="+range_hour;
-		String tem = curr_a+"_"+curr_b;
-		String result = httpUtil.requestHttpGet(url_prex, CANDLESTICK2_URL+tem, param);
+		String param = type + "=" + group_sec + "&range_hour=" + range_hour;
+		String tem = curr_a + "_" + curr_b;
+		String result = httpUtil.requestHttpGet(url_prex, CANDLESTICK2_URL + tem, param);
 		return result;
 	}
+
 	public String getUrl_prex() {
 		return url_prex;
 	}

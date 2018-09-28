@@ -1,6 +1,10 @@
 package com.teachy.coins.tasks;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -34,27 +38,33 @@ public class KlineTasks {
 	private static IStockRestApi stockGet = new StockRestApiImpl(query_url);
 	private static IStockRestApi stockPost = new StockRestApiImpl(trade_url);
 	private final static String WEBSITE = "gate";
+	private final static String GROUP_SET = "group_set";
+	private final static String GROUP_SEC = "group_sec";
 
 	/**
 	 * 1m-btc_usdt
 	 */
-	@Scheduled(cron = "* 0/1 * * * ?")
+	@Scheduled(cron = "0 0/1 * * * ?")
 	private void getKline1m() {
-		String pairs = null;
+		Coins[] coins = Coins.values();
+		Arrays.stream(coins).forEach(
+			e -> insert(e.getName(), CoinsType.USDT.getType(), 60, 0.1, GROUP_SEC, TabbleName.M1.getValue()));
+	}
+
+	private void insert(String coinName, String coinType, int time, double hour, String type, String tableName) {
 		try {
-			pairs = stockGet.candlestick2(Coins.BTC.getName(), CoinsType.USDT.getType(), 60, 0.5);
+			String pairs = stockGet.candlestick2(coinName, coinType, time, hour, type);
 			JSONObject res = JSONObject.parseObject(pairs);
 			if (hasData(res)) {
 				List<JSONArray> datas = (List<JSONArray>)res.get("data");
 				List<Kbase> klines = datas.parallelStream().map(
-					(JSONArray line) -> getKbase(line, Coins.BTC.getName(), CoinsType.USDT.getType(),
-						TabbleName.M1.getValue())).collect(
-					Collectors.toList());
+					(JSONArray line) -> getKbase(line, coinName, coinType,
+						tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
+					datas.size() - 1).collect(
+					toList());
 				insertKlines(klines);
 			}
-		} catch (HttpException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
