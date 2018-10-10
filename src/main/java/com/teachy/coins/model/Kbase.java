@@ -8,10 +8,6 @@ import com.teachy.coins.utils.StringUtils;
 public class Kbase implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public Kbase() {
-		super();
-	}
-
 	public Kbase(long timeLong, Double volume, Double close, Double high, Double low, Double open, String website,
 		String type, String name, String tableName) {
 		this.id = "'" + StringUtils.getUUid() + "'";

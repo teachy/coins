@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teachy.coins.mapper.BaseCoinsDAO">
+    <insert id="insert" parameterType="com.teachy.coins.model.BaseCoins" keyProperty="id" useGeneratedKeys="true">
+    insert into base_coins(name,website,enable)
+         values (#{name},#{website}, #{enable})
+  </insert>
+
+    <select id="getEnableCoins" resultType="com.teachy.coins.model.BaseCoins">
+        select id,name,website,enable
+        from base_coins
+        where enable = 1
+    </select>
+</mapper>
