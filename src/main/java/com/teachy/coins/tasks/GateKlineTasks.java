@@ -3,7 +3,6 @@ package com.teachy.coins.tasks;
 import static java.util.stream.Collectors.*;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.teachy.coins.enumers.Coins;
 import com.teachy.coins.enumers.CoinsType;
 import com.teachy.coins.enumers.TabbleName;
 import com.teachy.coins.gateio.restApi.IStockRestApi;
@@ -33,7 +31,6 @@ public class GateKlineTasks extends BaseTask {
 	private final static String GROUP_SET = "group_set";
 	private final static String GROUP_SEC = "group_sec";
 	private boolean first = true;
-	private final static Coins[] coins = Coins.values();
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
 
 	/**
