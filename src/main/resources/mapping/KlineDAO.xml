@@ -25,4 +25,11 @@
       )
   </insert>
 
+    <select id="getList" resultMap="BaseResultMap" parameterType="com.teachy.coins.model.Kbase"
+            statementType="STATEMENT">
+        select name,volume,close,open,high,low,time_str from  ${tableName}
+        where website=${website} and `name`=${name} and type=${type}
+        ORDER BY time_long DESC LIMIT 2000
+    </select>
+
 </mapper>

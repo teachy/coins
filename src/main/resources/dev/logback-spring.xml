@@ -67,12 +67,12 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         表示当前logger的appender-ref和rootLogger的appender-ref都有效
     -->
     <!-- hibernate logger -->
-    <logger name="com.teachy.coins.mapper" level="debug" additivity="true">
+    <logger name="com.teachy.coins.mapper" level="debug" additivity="false">
         <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>
     </logger>
     <!-- Spring framework logger -->
-    <logger name="org.springframework" level="info" additivity="true">
+    <logger name="org.springframework" level="info" additivity="false">
         <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>
     </logger>
