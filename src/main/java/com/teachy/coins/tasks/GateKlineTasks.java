@@ -20,7 +20,7 @@ import com.teachy.coins.gateio.restApi.impl.StockRestApiImpl;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 
-@Component
+//@Component
 public class GateKlineTasks extends BaseTask {
 
 	private final static String query_url = "https://data.gateio.io";
