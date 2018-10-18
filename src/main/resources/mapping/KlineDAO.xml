@@ -29,7 +29,7 @@
             statementType="STATEMENT">
         select name,volume,close,open,high,low,time_str from  ${tableName}
         where website=${website} and `name`=${name} and type=${type}
-        ORDER BY time_long DESC LIMIT 2000
+        ORDER BY time_long DESC LIMIT 1000
     </select>
 
 </mapper>

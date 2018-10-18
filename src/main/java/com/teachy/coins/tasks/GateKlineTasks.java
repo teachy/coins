@@ -218,7 +218,7 @@ public class GateKlineTasks extends BaseTask {
 			String res = stockGet.pairs();
 			JSONArray array = JSONArray.parseArray(res);
 			List<BaseCoins> list = array.stream().map(e -> e.toString()).filter(e -> e.endsWith("_USDT")).map(
-				e -> new BaseCoins(e.replace("_USDT", ""), "gate", 0)).collect(toList());
+				e -> new BaseCoins(e.replace("_USDT", ""), "gate", 1)).collect(toList());
 			list.stream().forEach(e -> baseCoinsDAO.insert(e));
 		} catch (Exception e) {
 			e.printStackTrace();

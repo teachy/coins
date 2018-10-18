@@ -29,7 +29,8 @@ public class KlineWarning extends BaseTask {
 	}
 
 	private void check(String name) {
-		List<List<Kbase>> allList = Stream.of(TabbleName.M1.getValue()).map(
+		List<List<Kbase>> allList = Stream.of(TabbleName.M1.getValue(), TabbleName.M5.getValue(),
+			TabbleName.M10.getValue(), TabbleName.M30.getValue(), TabbleName.H1.getValue(), TabbleName.H2.getValue()).map(
 			e -> klineDAO.getList(new Kbase(WEBSITE, TYPE, name, e))).collect(
 			toList());
 		int volume = checks(allList, KlineWarning::checkVolume);
