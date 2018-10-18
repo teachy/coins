@@ -20,7 +20,7 @@ import com.teachy.coins.gateio.restApi.impl.StockRestApiImpl;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 
-//@Component
+@Component
 public class GateKlineTasks extends BaseTask {
 
 	private final static String query_url = "https://data.gateio.io";
@@ -36,7 +36,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 1m
 	 */
-	@Scheduled(cron = "1 0/1 * * * ?")
+	@Scheduled(cron = "5 0/1 * * * ?")
 	public void getKline1m() {
 		if (first) {
 			init();
@@ -58,7 +58,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 5m
 	 */
-	@Scheduled(cron = "3 0/5 * * * ?")
+	@Scheduled(cron = "12 0/5 * * * ?")
 	public void getKline5m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 300, 2, TabbleName.M5.getValue()));
@@ -76,7 +76,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 10m
 	 */
-	@Scheduled(cron = "5 0/10 * * * ?")
+	@Scheduled(cron = "17 0/10 * * * ?")
 	public void getKline10m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 600, 5, TabbleName.M10.getValue()));
@@ -94,7 +94,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 30m
 	 */
-	@Scheduled(cron = "7 0/30 * * * ?")
+	@Scheduled(cron = "27 0/30 * * * ?")
 	public void getKline30m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 1800, 20, TabbleName.M30.getValue()));
@@ -112,7 +112,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 1h
 	 */
-	@Scheduled(cron = "9 1 0/1 * * ?")
+	@Scheduled(cron = "49 1 0/1 * * ?")
 	public void getKline1h() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 3600, 48, TabbleName.H1.getValue()));
@@ -179,6 +179,11 @@ public class GateKlineTasks extends BaseTask {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private Kbase getKbase(JSONArray line, String name, String type, String tableName) {
@@ -213,11 +218,9 @@ public class GateKlineTasks extends BaseTask {
 			String res = stockGet.pairs();
 			JSONArray array = JSONArray.parseArray(res);
 			List<BaseCoins> list = array.stream().map(e -> e.toString()).filter(e -> e.endsWith("_USDT")).map(
-				e -> new BaseCoins(e.replace("_USDT", ""), "gateIo", 0)).collect(toList());
+				e -> new BaseCoins(e.replace("_USDT", ""), "gate", 0)).collect(toList());
 			list.stream().forEach(e -> baseCoinsDAO.insert(e));
-		} catch (HttpException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

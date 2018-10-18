@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.function.ToIntFunction;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -15,13 +16,14 @@ import org.springframework.stereotype.Component;
 
 import com.teachy.coins.enumers.TabbleName;
 import com.teachy.coins.model.Kbase;
+import com.teachy.coins.model.Warning;
 
 @Component
 public class KlineWarning extends BaseTask {
 	private final String WEBSITE = "gate";
 	private final String TYPE = "usdt";
 
-	@Scheduled(cron = "0/10 * * * * ?")
+	@Scheduled(cron = "33 0/1 * * * ?")
 	public void warningKline() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(e -> check(e.getName()));
 	}
@@ -30,22 +32,27 @@ public class KlineWarning extends BaseTask {
 		List<List<Kbase>> allList = Stream.of(TabbleName.M1.getValue()).map(
 			e -> klineDAO.getList(new Kbase(WEBSITE, TYPE, name, e))).collect(
 			toList());
-		int volume = checkPrices(allList.stream().collect(toList()));
-		int price = checkVolumes(allList.stream().collect(toList()));
-		System.out.println(volume + price);
+		int volume = checks(allList, KlineWarning::checkVolume);
+		int price = checks(allList, KlineWarning::checkPrice);
+		int count = volume + price;
+		if (count > 1) {
+			Warning warning = new Warning(WEBSITE, name, volume, price, count, 0, "");
+			Warning warning1 = warningDAO.selectWarning(warning);
+			if (warning1 == null) {
+				warningDAO.insert(warning);
+			} else {
+				warning.setId(warning1.getId());
+				warningDAO.updateById(warning);
+			}
+		}
 	}
 
-	private int checkPrices(List<List<Kbase>> allList) {
-		IntStream intStream = allList.stream().mapToInt(e -> checkPrice(e));
+	private int checks(List<List<Kbase>> allList, ToIntFunction<List<Kbase>> toIntFunction) {
+		IntStream intStream = allList.stream().mapToInt(toIntFunction);
 		return intStream.sum();
 	}
 
-	private int checkVolumes(List<List<Kbase>> allList) {
-		IntStream intStream = allList.stream().mapToInt(e -> checkVolume(e));
-		return intStream.sum();
-	}
-
-	private int checkPrice(List<Kbase> list) {
+	private static int checkPrice(List<Kbase> list) {
 		if (list == null || list.size() == 0) {
 			return 0;
 		}
@@ -71,7 +78,7 @@ public class KlineWarning extends BaseTask {
 		return 0;
 	}
 
-	private int checkVolume(List<Kbase> list) {
+	private static int checkVolume(List<Kbase> list) {
 		if (list == null || list.size() == 0) {
 			return 0;
 		}

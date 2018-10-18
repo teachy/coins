@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.teachy.coins.mapper.BaseCoinsDAO;
 import com.teachy.coins.mapper.KlineDAO;
+import com.teachy.coins.mapper.WarningDAO;
+
 @Component
 public class BaseTask {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -14,4 +16,6 @@ public class BaseTask {
 	protected KlineDAO klineDAO;
 	@Autowired
 	protected BaseCoinsDAO baseCoinsDAO;
+	@Autowired
+	protected WarningDAO warningDAO;
 }

@@ -3,7 +3,7 @@ package com.teachy.coins.enumers;
 public enum CoinsType {
 	BTC("btc"),
 	ETH("eth"),
-	USDT("usdt");
+	USDT("USDT");
 	private final String type;
 
 	private CoinsType(String type) {
