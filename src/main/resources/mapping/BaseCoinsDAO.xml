@@ -7,7 +7,7 @@
   </insert>
 
     <select id="getEnableCoins" resultType="com.teachy.coins.model.BaseCoins">
-        select id,name,website,enable
+        select name
         from base_coins
         where enable = 1
     </select>

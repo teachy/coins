@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.teachy.coins.enumers.TabbleName;
+import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 import com.teachy.coins.model.Warning;
 
@@ -23,17 +24,23 @@ public class KlineWarning extends BaseTask {
 	private final String WEBSITE = "gate";
 	private final String TYPE = "usdt";
 
-	@Scheduled(cron = "33 0/1 * * * ?")
+	@Scheduled(cron = "33 0/4 * * * ?")
 	public void warningKline() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(e -> check(e.getName()));
+		//not use Stream.map:the database overhead is too large
+		List<BaseCoins> list = baseCoinsDAO.getEnableCoins();
+		for (BaseCoins baseCoins : list) {
+			check(baseCoins.getName());
+		}
 	}
 
 	private void check(String name) {
-		List<List<Kbase>> allList = Stream.of(TabbleName.M1.getValue(), TabbleName.M5.getValue(),
-			TabbleName.M10.getValue(), TabbleName.M30.getValue(), TabbleName.H1.getValue(),
-			TabbleName.H2.getValue()).map(
-			e -> klineDAO.getList(new Kbase(WEBSITE, TYPE, name, e))).collect(
-			toList());
+		List<List<Kbase>> allList = new ArrayList<>();
+		List<String> tables = Stream.of(TabbleName.M1.getValue(), TabbleName.M5.getValue(),
+			TabbleName.M10.getValue(), TabbleName.M30.getValue()).collect(toList());
+		for (String tableName : tables) {
+			List<Kbase> eveList = klineDAO.getList(new Kbase(WEBSITE, TYPE, name, tableName));
+			allList.add(eveList);
+		}
 		int volume = checks(allList, KlineWarning::checkVolume);
 		int price = checks(allList, KlineWarning::checkPrice);
 		int count = volume + price;

@@ -20,7 +20,7 @@ import com.teachy.coins.gateio.restApi.impl.StockRestApiImpl;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 
-@Component
+//@Component
 public class GateKlineTasks extends BaseTask {
 
 	private final static String query_url = "https://data.gateio.io";
@@ -36,7 +36,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 1m
 	 */
-	@Scheduled(cron = "5 0/1 * * * ?")
+	@Scheduled(cron = "5 0/2 * * * ?")
 	public void getKline1m() {
 		if (first) {
 			init();
@@ -58,7 +58,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 5m
 	 */
-	@Scheduled(cron = "12 0/5 * * * ?")
+	@Scheduled(cron = "12 0/8 * * * ?")
 	public void getKline5m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 300, 2, TabbleName.M5.getValue()));
@@ -76,7 +76,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 10m
 	 */
-	@Scheduled(cron = "17 0/10 * * * ?")
+	@Scheduled(cron = "17 0/14 * * * ?")
 	public void getKline10m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 600, 5, TabbleName.M10.getValue()));
@@ -180,7 +180,7 @@ public class GateKlineTasks extends BaseTask {
 			e.printStackTrace();
 		}
 		try {
-			Thread.sleep(100);
+			Thread.sleep(50);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
