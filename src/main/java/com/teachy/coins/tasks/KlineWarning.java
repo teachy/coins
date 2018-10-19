@@ -30,13 +30,14 @@ public class KlineWarning extends BaseTask {
 
 	private void check(String name) {
 		List<List<Kbase>> allList = Stream.of(TabbleName.M1.getValue(), TabbleName.M5.getValue(),
-			TabbleName.M10.getValue(), TabbleName.M30.getValue(), TabbleName.H1.getValue(), TabbleName.H2.getValue()).map(
+			TabbleName.M10.getValue(), TabbleName.M30.getValue(), TabbleName.H1.getValue(),
+			TabbleName.H2.getValue()).map(
 			e -> klineDAO.getList(new Kbase(WEBSITE, TYPE, name, e))).collect(
 			toList());
 		int volume = checks(allList, KlineWarning::checkVolume);
 		int price = checks(allList, KlineWarning::checkPrice);
 		int count = volume + price;
-		if (count > 1) {
+		if (price > 1 && count > 2) {
 			Warning warning = new Warning(WEBSITE, name, volume, price, count, 0, "");
 			Warning warning1 = warningDAO.selectWarning(warning);
 			if (warning1 == null) {

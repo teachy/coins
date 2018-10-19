@@ -169,7 +169,7 @@ public class GateKlineTasks extends BaseTask {
 			JSONObject res = JSONObject.parseObject(pairs);
 			if (hasData(res)) {
 				List<JSONArray> datas = (List<JSONArray>)res.get("data");
-				List<Kbase> klines = datas.parallelStream().map(
+				List<Kbase> klines = datas.stream().map(
 					(JSONArray line) -> getKbase(line, coinName, coinType,
 						tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
 					datas.size() - 1).collect(
@@ -180,7 +180,7 @@ public class GateKlineTasks extends BaseTask {
 			e.printStackTrace();
 		}
 		try {
-			Thread.sleep(500);
+			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
