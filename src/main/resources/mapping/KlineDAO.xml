@@ -32,4 +32,12 @@
         ORDER BY time_long DESC LIMIT 100
     </select>
 
+
+    <delete id="delete" parameterType="java.util.Map" statementType="STATEMENT">
+        DELETE FROM
+        ${tableName}
+        WHERE
+        time_str <![CDATA[ < ]]>SUBDATE(now(),${days})
+    </delete>
+
 </mapper>

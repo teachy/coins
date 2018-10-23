@@ -18,7 +18,7 @@ import com.teachy.coins.enumers.TabbleName;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 import com.teachy.coins.model.Warning;
-
+//Cancel 1: Database pressure is too high, 2: Delay is too high
 //@Component
 public class KlineWarning extends BaseTask {
 	private final String WEBSITE = "gate";
