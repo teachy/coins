@@ -19,7 +19,7 @@ import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 import com.teachy.coins.model.Warning;
 
-@Component
+//@Component
 public class KlineWarning extends BaseTask {
 	private final String WEBSITE = "gate";
 	private final String TYPE = "usdt";
