@@ -44,7 +44,7 @@ public class GateKlineTasks extends BaseTask {
 	/**
 	 * 1m
 	 */
-	@Scheduled(cron = "10 0/1* * * ?")
+	@Scheduled(cron = "10 0/1 * * * ?")
 	public void getKline1m() {
 		if (first) {
 			init();
