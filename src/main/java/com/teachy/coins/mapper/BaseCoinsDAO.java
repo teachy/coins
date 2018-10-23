@@ -14,4 +14,5 @@ public interface BaseCoinsDAO {
 
 	List<BaseCoins> getEnableCoins();
 
+	List<BaseCoins> getDisableCoins();
 }

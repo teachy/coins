@@ -11,4 +11,10 @@
         from base_coins
         where enable = 1
     </select>
+
+    <select id="getDisableCoins" resultType="com.teachy.coins.model.BaseCoins">
+        select name
+        from base_coins
+        where enable = 0
+    </select>
 </mapper>

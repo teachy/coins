@@ -40,6 +40,7 @@ public class GateKlineTasks extends BaseTask {
 	private final static String GROUP_SEC = "group_sec";
 	private boolean first = true;
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
+	private List<String> warningList = new ArrayList<>();
 
 	/**
 	 * 1m
@@ -49,6 +50,9 @@ public class GateKlineTasks extends BaseTask {
 		if (first) {
 			init();
 			first = false;
+			warningList.add(TabbleName.M1.getValue());
+			warningList.add(TabbleName.M5.getValue());
+			warningList.add(TabbleName.M10.getValue());
 		}
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 60, 0.1, TabbleName.M1.getValue()));
@@ -183,28 +187,25 @@ public class GateKlineTasks extends BaseTask {
 					datas.size() - 1).collect(
 					toList());
 				insertKlines(klines);
-				Collections.reverse(klines);
-				int volume = checkVolume(klines);
-				int price = checkPrice(klines);
-				int count = volume + price;
-				if (price > 1 && volume > 1) {
-					Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
-					Warning warning1 = warningDAO.selectWarning(warning);
-					if (warning1 == null) {
-						warningDAO.insert(warning);
-					} else {
-						warning.setId(warning1.getId());
-						warningDAO.updateById(warning);
+				if (warningList.contains(coinName)) {
+					Collections.reverse(klines);
+					int volume = checkVolume(klines);
+					int price = checkPrice(klines);
+					int count = volume + price;
+					if (price > 1 && volume > 1) {
+						Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
+						Warning warning1 = warningDAO.selectWarning(warning);
+						if (warning1 == null) {
+							warningDAO.insert(warning);
+						} else {
+							warning.setId(warning1.getId());
+							warningDAO.updateById(warning);
+						}
 					}
 				}
 			}
 		} catch (Exception e) {
 			//do nothing
-		}
-		try {
-			Thread.sleep(50);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -223,14 +224,10 @@ public class GateKlineTasks extends BaseTask {
 	}
 
 	private void insertKlines(List<Kbase> klines) {
-		AtomicInteger success = new AtomicInteger();
-		AtomicInteger error = new AtomicInteger();
 		klines.stream().forEach((Kbase each) -> {
 			try {
 				klineDAO.insert(each);
-				success.getAndIncrement();
 			} catch (Exception e) {
-				error.getAndIncrement();
 			}
 		});
 	}
