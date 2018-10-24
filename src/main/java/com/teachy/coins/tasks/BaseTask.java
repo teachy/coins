@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.teachy.coins.mapper.BaseCoinsDAO;
 import com.teachy.coins.mapper.KlineDAO;
 import com.teachy.coins.mapper.WarningDAO;
+import com.teachy.coins.utils.SendEmail;
 
 @Component
 public class BaseTask {
@@ -18,4 +19,6 @@ public class BaseTask {
 	protected BaseCoinsDAO baseCoinsDAO;
 	@Autowired
 	protected WarningDAO warningDAO;
+	@Autowired
+	protected SendEmail sendEmail;
 }

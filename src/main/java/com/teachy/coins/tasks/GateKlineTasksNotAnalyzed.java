@@ -23,7 +23,11 @@ import com.teachy.coins.gateio.restApi.impl.StockRestApiImpl;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 import com.teachy.coins.model.Warning;
+import com.teachy.coins.utils.DateUtils;
 
+/**
+ * Tracking but not warning
+ */
 @Component
 public class GateKlineTasksNotAnalyzed extends BaseTask {
 
@@ -41,8 +45,13 @@ public class GateKlineTasksNotAnalyzed extends BaseTask {
 	 */
 	@Scheduled(cron = "31 1 0/4 * * ?")
 	public void getKline1m_NotAnalyzed() {
-		baseCoinsDAO.getDisableCoins().stream().forEach(
+		List<BaseCoins> disableCoins = baseCoinsDAO.getDisableCoins();
+		disableCoins.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 60, 12, TabbleName.M1.getValue()));
+		disableCoins.stream().filter(e -> e.getEnable() == 0).filter(
+			e -> DateUtils.differentDays(e.getUpdateTime()) > 5).forEach(e -> {
+			baseCoinsDAO.updateCoinsIsable(new BaseCoins(e.getName(), e.getWebsite(), 1));
+		});
 	}
 
 	/**

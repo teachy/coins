@@ -28,6 +28,9 @@ import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 import com.teachy.coins.model.Warning;
 
+/**
+ * Timely tracking and early warning
+ */
 @Component
 public class GateKlineTasks extends BaseTask {
 
@@ -41,6 +44,7 @@ public class GateKlineTasks extends BaseTask {
 	private boolean first = true;
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
 	private List<String> warningList = new ArrayList<>();
+	private List<String> noWarningList = new ArrayList<>();
 
 	/**
 	 * 1m
@@ -53,6 +57,8 @@ public class GateKlineTasks extends BaseTask {
 			warningList.add(TabbleName.M1.getValue());
 			warningList.add(TabbleName.M5.getValue());
 			warningList.add(TabbleName.M10.getValue());
+			noWarningList.add(TabbleName.H12.getValue());
+			noWarningList.add(TabbleName.H24.getValue());
 		}
 		baseCoinsDAO.getEnableCoins().stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 60, 0.1, TabbleName.M1.getValue()));
@@ -187,20 +193,31 @@ public class GateKlineTasks extends BaseTask {
 					datas.size() - 1).collect(
 					toList());
 				insertKlines(klines);
-				if (warningList.contains(coinName)) {
+				if (warningList.contains(coinName) || noWarningList.contains(coinName)) {
 					Collections.reverse(klines);
 					int volume = checkVolume(klines);
 					int price = checkPrice(klines);
 					int count = volume + price;
 					if (price > 1 && volume > 1) {
-						Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
-						Warning warning1 = warningDAO.selectWarning(warning);
-						if (warning1 == null) {
-							warningDAO.insert(warning);
+						if (warningList.contains(coinName)) {
+							Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
+							Warning warning1 = warningDAO.selectWarning(warning);
+							if (warning1 == null) {
+								warningDAO.insert(warning);
+							} else {
+								warning.setId(warning1.getId());
+								warningDAO.updateById(warning);
+							}
+							String title = WEBSITE + ":" + coinName;
+							String content = warning.toString();
+							logger.info("send email begin......");
+							logger.info("title:{},content:{}", title, content);
+							sendEmail.sendEmail(title, content);
+							logger.info("send email end......");
 						} else {
-							warning.setId(warning1.getId());
-							warningDAO.updateById(warning);
+							baseCoinsDAO.updateCoinsIsable(new BaseCoins(coinName, WEBSITE, 0));
 						}
+
 					}
 				}
 			}
@@ -244,7 +261,7 @@ public class GateKlineTasks extends BaseTask {
 		}
 	}
 
-	private static int checkPrice(List<Kbase> list) {
+	public static int checkPrice(List<Kbase> list) {
 		if (list == null || list.size() == 0) {
 			return 0;
 		}
@@ -270,7 +287,7 @@ public class GateKlineTasks extends BaseTask {
 		return 0;
 	}
 
-	private static int checkVolume(List<Kbase> list) {
+	public static int checkVolume(List<Kbase> list) {
 		if (list == null || list.size() == 0) {
 			return 0;
 		}

@@ -15,6 +15,11 @@
     <select id="getDisableCoins" resultType="com.teachy.coins.model.BaseCoins">
         select name
         from base_coins
-        where enable = 0
+        where enable = 0 or enable = 2
     </select>
+
+    <update id="updateCoinsIsable" parameterType="com.teachy.coins.model.BaseCoins">
+        update base_coins set enable = #{enable},update_time = #{updateTime}
+        where name = #{name} and website = #{website}
+    </update>
 </mapper>
