@@ -27,9 +27,17 @@
 
     <select id="getList" resultMap="BaseResultMap" parameterType="com.teachy.coins.model.Kbase"
             statementType="STATEMENT">
-        select name,volume,close,open,high,low,time_str from  ${tableName}
+        select volume,close,open from  ${tableName}
         where website=${website} and `name`=${name} and type=${type}
-        ORDER BY time_long DESC LIMIT 1000
+        ORDER BY time_long DESC LIMIT 100
     </select>
+
+
+    <delete id="delete" parameterType="java.util.Map" statementType="STATEMENT">
+        DELETE FROM
+        ${tableName}
+        WHERE
+        time_str <![CDATA[ < ]]>SUBDATE(now(),${days})
+    </delete>
 
 </mapper>

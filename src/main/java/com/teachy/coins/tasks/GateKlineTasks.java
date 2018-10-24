@@ -3,11 +3,18 @@ package com.teachy.coins.tasks;
 import static java.util.stream.Collectors.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import org.apache.http.HttpException;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +26,11 @@ import com.teachy.coins.gateio.restApi.IStockRestApi;
 import com.teachy.coins.gateio.restApi.impl.StockRestApiImpl;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
+import com.teachy.coins.model.Warning;
 
+/**
+ * Timely tracking and early warning
+ */
 @Component
 public class GateKlineTasks extends BaseTask {
 
@@ -32,18 +43,25 @@ public class GateKlineTasks extends BaseTask {
 	private final static String GROUP_SEC = "group_sec";
 	private boolean first = true;
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
+	private List<String> warningList = new ArrayList<>();
+	private List<String> noWarningList = new ArrayList<>();
 
 	/**
 	 * 1m
 	 */
-	@Scheduled(cron = "5 0/1 * * * ?")
+	@Scheduled(cron = "10 0/1 * * * ?")
 	public void getKline1m() {
 		if (first) {
 			init();
 			first = false;
+			warningList.add(TabbleName.M1.getValue());
+			warningList.add(TabbleName.M5.getValue());
+			warningList.add(TabbleName.M10.getValue());
+			noWarningList.add(TabbleName.H12.getValue());
+			noWarningList.add(TabbleName.H24.getValue());
 		}
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 60, 1, TabbleName.M1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 60, 0.1, TabbleName.M1.getValue()));
 	}
 
 	/**
@@ -61,7 +79,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "12 0/5 * * * ?")
 	public void getKline5m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 300, 2, TabbleName.M5.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 300, 5, TabbleName.M5.getValue()));
 	}
 
 	/**
@@ -79,7 +97,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "17 0/10 * * * ?")
 	public void getKline10m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 5, TabbleName.M10.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 600, 10, TabbleName.M10.getValue()));
 	}
 
 	/**
@@ -97,7 +115,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "27 0/30 * * * ?")
 	public void getKline30m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 20, TabbleName.M30.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 1800, 30, TabbleName.M30.getValue()));
 	}
 
 	/**
@@ -175,14 +193,36 @@ public class GateKlineTasks extends BaseTask {
 					datas.size() - 1).collect(
 					toList());
 				insertKlines(klines);
+				if (warningList.contains(coinName) || noWarningList.contains(coinName)) {
+					Collections.reverse(klines);
+					int volume = checkVolume(klines);
+					int price = checkPrice(klines);
+					int count = volume + price;
+					if (price > 1 && volume > 1) {
+						if (warningList.contains(coinName)) {
+							Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
+							Warning warning1 = warningDAO.selectWarning(warning);
+							if (warning1 == null) {
+								warningDAO.insert(warning);
+							} else {
+								warning.setId(warning1.getId());
+								warningDAO.updateById(warning);
+							}
+							String title = WEBSITE + ":" + coinName;
+							String content = warning.toString();
+							logger.info("send email begin......");
+							logger.info("title:{},content:{}", title, content);
+							sendEmail.sendEmail(title, content);
+							logger.info("send email end......");
+						} else {
+							baseCoinsDAO.updateCoinsIsable(new BaseCoins(coinName, WEBSITE, 0));
+						}
+
+					}
+				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			//do nothing
 		}
 	}
 
@@ -201,14 +241,10 @@ public class GateKlineTasks extends BaseTask {
 	}
 
 	private void insertKlines(List<Kbase> klines) {
-		AtomicInteger success = new AtomicInteger();
-		AtomicInteger error = new AtomicInteger();
 		klines.stream().forEach((Kbase each) -> {
 			try {
 				klineDAO.insert(each);
-				success.getAndIncrement();
 			} catch (Exception e) {
-				error.getAndIncrement();
 			}
 		});
 	}
@@ -223,5 +259,55 @@ public class GateKlineTasks extends BaseTask {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static int checkPrice(List<Kbase> list) {
+		if (list == null || list.size() == 0) {
+			return 0;
+		}
+		List<Double> avgList = list.stream().map(e -> (e.getClose() + e.getOpen()) / 2).collect(toList());
+		double firstAvg = avgList.get(0);
+		List<Double> newList = new ArrayList();
+		for (Double d : avgList) {
+			if (d <= firstAvg) {
+				newList.add(d);
+			} else {
+				break;
+			}
+		}
+		if (newList.size() > 3) {
+			DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
+			DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
+			double avg = doubleSummaryStatistics.getAverage();
+			if (firstAvg > avg) {
+				return (int)(new BigDecimal((firstAvg - avg) / avg).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()
+					* 10);
+			}
+		}
+		return 0;
+	}
+
+	public static int checkVolume(List<Kbase> list) {
+		if (list == null || list.size() == 0) {
+			return 0;
+		}
+		double firstVolume = list.get(0).getVolume();
+		List<Double> newList = new ArrayList();
+		for (Kbase kbase : list) {
+			if (kbase.getVolume() <= firstVolume) {
+				if (kbase.getVolume() > 0) {
+					newList.add(kbase.getVolume());
+				}
+			} else {
+				break;
+			}
+		}
+		if (newList.size() > 3) {
+			DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
+			DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
+			double avg = doubleSummaryStatistics.getAverage();
+			return (int)(firstVolume / avg);
+		}
+		return 0;
 	}
 }
