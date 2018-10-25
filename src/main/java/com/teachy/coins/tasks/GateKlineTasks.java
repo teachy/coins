@@ -61,7 +61,7 @@ public class GateKlineTasks extends BaseTask {
 			noWarningList.add(TabbleName.H24.getValue());
 		}
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 60, 2, TabbleName.M1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 60, 0.2, TabbleName.M1.getValue()));
 	}
 
 	/**
@@ -147,9 +147,9 @@ public class GateKlineTasks extends BaseTask {
 						tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
 					datas.size() - 1).collect(
 					toList());
-				insertKlines(klines);
+				Collections.reverse(klines);
+				insertKlines(klines.stream().limit(3).collect(toList()));
 				if (warningList.contains(coinName) || noWarningList.contains(coinName)) {
-					Collections.reverse(klines);
 					int volume = checkVolume(klines);
 					int price = checkPrice(klines);
 					int count = volume + price;
