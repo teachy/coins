@@ -23,3 +23,5 @@
 /dist/
 /nbdist/
 /.nb-gradle/
+/src/main/resources/email.properties
+/src/main/resources/real/application-real.properties

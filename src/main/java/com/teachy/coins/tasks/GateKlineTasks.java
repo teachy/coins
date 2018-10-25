@@ -61,16 +61,7 @@ public class GateKlineTasks extends BaseTask {
 			noWarningList.add(TabbleName.H24.getValue());
 		}
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 60, 0.1, TabbleName.M1.getValue()));
-	}
-
-	/**
-	 * 1m-long
-	 */
-	@Scheduled(cron = "31 1 0/5 * * ?")
-	public void getKline1m_long() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 60, 6, TabbleName.M1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 60, 2, TabbleName.M1.getValue()));
 	}
 
 	/**
@@ -79,16 +70,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "12 0/5 * * * ?")
 	public void getKline5m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 300, 5, TabbleName.M5.getValue()));
-	}
-
-	/**
-	 * 5m-long
-	 */
-	@Scheduled(cron = "33 3 0/10 * * ?")
-	public void getKline5m_long() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 300, 24, TabbleName.M5.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 300, 10, TabbleName.M5.getValue()));
 	}
 
 	/**
@@ -97,16 +79,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "17 0/10 * * * ?")
 	public void getKline10m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 10, TabbleName.M10.getValue()));
-	}
-
-	/**
-	 * 10m-long
-	 */
-	@Scheduled(cron = "35 10 0/20 * * ?")
-	public void getKline10m_long() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 48, TabbleName.M10.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue()));
 	}
 
 	/**
@@ -115,16 +88,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "27 0/30 * * * ?")
 	public void getKline30m() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 30, TabbleName.M30.getValue()));
-	}
-
-	/**
-	 * 30m-long
-	 */
-	@Scheduled(cron = "37 7 0/23 * * ?")
-	public void getKline30m_long() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 96, TabbleName.M30.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue()));
 	}
 
 	/**
@@ -133,16 +97,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "49 1 0/1 * * ?")
 	public void getKline1h() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 3600, 48, TabbleName.H1.getValue()));
-	}
-
-	/**
-	 * 1h-long
-	 */
-	@Scheduled(cron = "39 1 0/23 * * ?")
-	public void getKline1h_long() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 3600, 192, TabbleName.H1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue()));
 	}
 
 	/**
@@ -151,7 +106,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "11 1 0/2 * * ?")
 	public void getKline2h() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 7200, 320, TabbleName.H2.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue()));
 	}
 
 	/**
@@ -160,7 +115,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "15 1 0/4 * * ?")
 	public void getKline4h() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 14400, 640, TabbleName.H4.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue()));
 	}
 
 	/**
@@ -169,7 +124,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "19 1 0/12 * * ?")
 	public void getKline12h() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 43200, 2400, TabbleName.H12.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 43200, 1500, TabbleName.H12.getValue()));
 	}
 
 	/**
@@ -178,7 +133,7 @@ public class GateKlineTasks extends BaseTask {
 	@Scheduled(cron = "24 1 0 * * ?")
 	public void getKline24h() {
 		baseCoinsDAO.getEnableCoins().stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 86400, 4800, TabbleName.H24.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 86400, 3000, TabbleName.H24.getValue()));
 	}
 
 	private void insert(String coinName, String coinType, int time, double hour, String tableName) {
