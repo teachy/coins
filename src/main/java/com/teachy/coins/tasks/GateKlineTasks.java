@@ -11,6 +11,7 @@ import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,11 +54,12 @@ public class GateKlineTasks extends BaseTask {
 	private static List<BaseCoins> coinsList;
 	private Map<String, String> emailList = new HashMap<>();
 	ExecutorService executorService = Executors.newFixedThreadPool(5);
+
 	/**
 	 * 1m
 	 */
 	@Scheduled(cron = "10 0/1 * * * ?")
-	public void getKline1m() {
+	public void getKline1m() throws InterruptedException {
 		if (first) {
 			init();
 			first = false;
@@ -69,83 +71,103 @@ public class GateKlineTasks extends BaseTask {
 			noWarningList.add(TabbleName.H24.getValue());
 		}
 		coinsList = baseCoinsDAO.getEnableCoins();
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 60, 0.2, TabbleName.M1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 60, 2, TabbleName.M1.getValue(), countDownLatch));
+		countDownLatch.await();
+
 	}
 
 	/**
 	 * 5m
 	 */
 	@Scheduled(cron = "12 0/5 * * * ?")
-	public void getKline5m() {
+	public void getKline5m() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 300, 10, TabbleName.M5.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 300, 10, TabbleName.M5.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 10m
 	 */
 	@Scheduled(cron = "17 0/10 * * * ?")
-	public void getKline10m() {
+	public void getKline10m() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 30m
 	 */
 	@Scheduled(cron = "27 0/30 * * * ?")
-	public void getKline30m() {
+	public void getKline30m() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 1h
 	 */
 	@Scheduled(cron = "49 1 0/1 * * ?")
-	public void getKline1h() {
+	public void getKline1h() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 2h
 	 */
 	@Scheduled(cron = "11 1 0/2 * * ?")
-	public void getKline2h() {
+	public void getKline2h() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 4h
 	 */
 	@Scheduled(cron = "15 1 0/4 * * ?")
-	public void getKline4h() {
+	public void getKline4h() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 12h
 	 */
 	@Scheduled(cron = "19 1 0/12 * * ?")
-	public void getKline12h() {
+	public void getKline12h() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 43200, 1500, TabbleName.H12.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 43200, 1500, TabbleName.H12.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 24h
 	 */
 	@Scheduled(cron = "24 1 0 * * ?")
-	public void getKline24h() {
+	public void getKline24h() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 86400, 3000, TabbleName.H24.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 86400, 3000, TabbleName.H24.getValue(),countDownLatch));
+		countDownLatch.await();
 	}
 
-	private void insert(String coinName, String coinType, int time, double hour, String tableName) {
+	private void insert(String coinName, String coinType, int time, double hour, String tableName,
+		CountDownLatch countDownLatch) {
 		executorService.execute(() -> {
 			try {
 				String pairs = stockGet.candlestick2(coinName, coinType, time, hour, GROUP_SEC);
@@ -158,7 +180,7 @@ public class GateKlineTasks extends BaseTask {
 						datas.size() - 1).collect(
 						toList());
 					Collections.reverse(klines);
-					insertKlines(klines.stream().limit(3).collect(toList()));
+					insertKlines(klines.stream().limit(20).collect(toList()));
 					if (warningList.contains(tableName) || noWarningList.contains(tableName)) {
 						int volume = checkVolume(klines);
 						int price = checkPrice(klines);
@@ -191,6 +213,8 @@ public class GateKlineTasks extends BaseTask {
 				}
 			} catch (Exception e) {
 				//do nothing
+			} finally {
+				countDownLatch.countDown();
 			}
 		});
 	}
