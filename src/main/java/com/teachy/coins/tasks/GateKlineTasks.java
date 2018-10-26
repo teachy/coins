@@ -8,7 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -27,6 +31,7 @@ import com.teachy.coins.gateio.restApi.impl.StockRestApiImpl;
 import com.teachy.coins.model.BaseCoins;
 import com.teachy.coins.model.Kbase;
 import com.teachy.coins.model.Warning;
+import com.teachy.coins.utils.DateUtils;
 
 /**
  * Timely tracking and early warning
@@ -45,7 +50,9 @@ public class GateKlineTasks extends BaseTask {
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
 	private List<String> warningList = new ArrayList<>();
 	private List<String> noWarningList = new ArrayList<>();
-
+	private static List<BaseCoins> coinsList;
+	private Map<String, String> emailList = new HashMap<>();
+	ExecutorService executorService = Executors.newFixedThreadPool(5);
 	/**
 	 * 1m
 	 */
@@ -57,10 +64,12 @@ public class GateKlineTasks extends BaseTask {
 			warningList.add(TabbleName.M1.getValue());
 			warningList.add(TabbleName.M5.getValue());
 			warningList.add(TabbleName.M10.getValue());
+			warningList.add(TabbleName.M30.getValue());
 			noWarningList.add(TabbleName.H12.getValue());
 			noWarningList.add(TabbleName.H24.getValue());
 		}
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList = baseCoinsDAO.getEnableCoins();
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 60, 0.2, TabbleName.M1.getValue()));
 	}
 
@@ -69,7 +78,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "12 0/5 * * * ?")
 	public void getKline5m() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 300, 10, TabbleName.M5.getValue()));
 	}
 
@@ -78,7 +87,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "17 0/10 * * * ?")
 	public void getKline10m() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue()));
 	}
 
@@ -87,7 +96,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "27 0/30 * * * ?")
 	public void getKline30m() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue()));
 	}
 
@@ -96,7 +105,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "49 1 0/1 * * ?")
 	public void getKline1h() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue()));
 	}
 
@@ -105,7 +114,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "11 1 0/2 * * ?")
 	public void getKline2h() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue()));
 	}
 
@@ -114,7 +123,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "15 1 0/4 * * ?")
 	public void getKline4h() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue()));
 	}
 
@@ -123,7 +132,7 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "19 1 0/12 * * ?")
 	public void getKline12h() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 43200, 1500, TabbleName.H12.getValue()));
 	}
 
@@ -132,53 +141,67 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "24 1 0 * * ?")
 	public void getKline24h() {
-		baseCoinsDAO.getEnableCoins().stream().forEach(
+		coinsList.stream().forEach(
 			e -> insert(e.getName(), CoinsType_USTD, 86400, 3000, TabbleName.H24.getValue()));
 	}
 
 	private void insert(String coinName, String coinType, int time, double hour, String tableName) {
-		try {
-			String pairs = stockGet.candlestick2(coinName, coinType, time, hour, GROUP_SEC);
-			JSONObject res = JSONObject.parseObject(pairs);
-			if (hasData(res)) {
-				List<JSONArray> datas = (List<JSONArray>)res.get("data");
-				List<Kbase> klines = datas.stream().map(
-					(JSONArray line) -> getKbase(line, coinName, coinType,
-						tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
-					datas.size() - 1).collect(
-					toList());
-				Collections.reverse(klines);
-				insertKlines(klines.stream().limit(3).collect(toList()));
-				if (warningList.contains(coinName) || noWarningList.contains(coinName)) {
-					int volume = checkVolume(klines);
-					int price = checkPrice(klines);
-					int count = volume + price;
-					if (price > 1 && volume > 1) {
-						if (warningList.contains(coinName)) {
-							Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
-							Warning warning1 = warningDAO.selectWarning(warning);
-							if (warning1 == null) {
-								warningDAO.insert(warning);
+		executorService.execute(() -> {
+			try {
+				String pairs = stockGet.candlestick2(coinName, coinType, time, hour, GROUP_SEC);
+				JSONObject res = JSONObject.parseObject(pairs);
+				if (hasData(res)) {
+					List<JSONArray> datas = (List<JSONArray>)res.get("data");
+					List<Kbase> klines = datas.stream().map(
+						(JSONArray line) -> getKbase(line, coinName, coinType,
+							tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
+						datas.size() - 1).collect(
+						toList());
+					Collections.reverse(klines);
+					insertKlines(klines.stream().limit(3).collect(toList()));
+					if (warningList.contains(tableName) || noWarningList.contains(tableName)) {
+						int volume = checkVolume(klines);
+						int price = checkPrice(klines);
+						int count = volume + price;
+						if (price > 1 && volume > 1) {
+							if (warningList.contains(tableName)) {
+								Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
+								Warning warning1 = warningDAO.selectWarning(warning);
+								if (warning1 == null) {
+									warningDAO.insert(warning);
+								} else {
+									warning.setId(warning1.getId());
+									warningDAO.updateById(warning);
+								}
+								String title = WEBSITE + ":" + coinName;
+								if (emailList.get(title) == null) {
+									sendEmail(warning, title);
+								} else {
+									if (DateUtils.differentDays(emailList.get(title)) > 1) {
+										sendEmail(warning, title);
+									}
+								}
 							} else {
-								warning.setId(warning1.getId());
-								warningDAO.updateById(warning);
+								//If an alarm is generated during this time period, it will not be followed for a short time.
+								baseCoinsDAO.updateCoinsIsable(new BaseCoins(coinName, WEBSITE, 0));
 							}
-							String title = WEBSITE + ":" + coinName;
-							String content = warning.toString();
-							logger.info("send email begin......");
-							logger.info("title:{},content:{}", title, content);
-							sendEmail.sendEmail(title, content);
-							logger.info("send email end......");
-						} else {
-							baseCoinsDAO.updateCoinsIsable(new BaseCoins(coinName, WEBSITE, 0));
-						}
 
+						}
 					}
 				}
+			} catch (Exception e) {
+				//do nothing
 			}
-		} catch (Exception e) {
-			//do nothing
-		}
+		});
+	}
+
+	private void sendEmail(Warning warning, String title) {
+		emailList.put(title, DateUtils.convertTimeToString(System.currentTimeMillis()));
+		String content = warning.toString();
+		logger.info("send email begin......");
+		logger.info("title:{},content:{}", title, content);
+		sendEmail.sendEmail(title, content);
+		logger.info("send email end......");
 	}
 
 	private Kbase getKbase(JSONArray line, String name, String type, String tableName) {
@@ -230,13 +253,13 @@ public class GateKlineTasks extends BaseTask {
 				break;
 			}
 		}
-		if (newList.size() > 3) {
+		if (newList.size() > 10) {
 			DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
 			DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
 			double avg = doubleSummaryStatistics.getAverage();
 			if (firstAvg > avg) {
 				return (int)(new BigDecimal((firstAvg - avg) / avg).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()
-					* 10);
+					* 15);
 			}
 		}
 		return 0;
@@ -257,7 +280,7 @@ public class GateKlineTasks extends BaseTask {
 				break;
 			}
 		}
-		if (newList.size() > 3) {
+		if (newList.size() > 10) {
 			DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
 			DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
 			double avg = doubleSummaryStatistics.getAverage();
