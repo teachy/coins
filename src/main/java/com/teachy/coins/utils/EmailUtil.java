@@ -74,8 +74,9 @@ public class EmailUtil {
 	public boolean sendMail(String to, String subject, String content) throws UnsupportedEncodingException {
 		Properties props = System.getProperties();                    // 创建Properties对象
 		props.put("mail.smtp.host",
-			this.host);                        // 创建信件服务器，如：props.put("mail.smtp.host", "smtp.163.com");
-		props.put("mail.smtp.port", "25");
+			this.host);
+		props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");// 创建信件服务器，如：props.put("mail.smtp.host", "smtp.163.com");
+		props.put("mail.smtp.port", "465");
 		props.put("mail.smtp.auth", "true");                         // 通过验证
 		props.put("mail.smtp.localhost", "localHostAddress");
 		MyAuthenticator authenticator = new MyAuthenticator(this.getUserName(), this.getPassword());
