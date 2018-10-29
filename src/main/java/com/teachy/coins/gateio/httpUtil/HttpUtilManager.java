@@ -56,7 +56,7 @@ public class HttpUtilManager {
 			long keepAlive = super.getKeepAliveDuration(response, context);
 
 			if (keepAlive == -1) {
-				keepAlive = 5000;
+				keepAlive = 2000;
 			}
 			return keepAlive;
 		}

@@ -53,7 +53,7 @@ public class GateKlineTasks extends BaseTask {
 	private List<String> noWarningList = new ArrayList<>();
 	private static List<BaseCoins> coinsList;
 	private Map<String, String> emailList = new HashMap<>();
-	ExecutorService executorService = Executors.newFixedThreadPool(5);
+	ExecutorService executorService = Executors.newFixedThreadPool(3);
 
 	/**
 	 * 1m
@@ -180,7 +180,7 @@ public class GateKlineTasks extends BaseTask {
 						datas.size() - 1).collect(
 						toList());
 					Collections.reverse(klines);
-					insertKlines(klines.stream().limit(20).collect(toList()));
+					insertKlines(klines.stream().limit(5).collect(toList()));
 					if (warningList.contains(tableName) || noWarningList.contains(tableName)) {
 						int volume = checkVolume(klines);
 						int price = checkPrice(klines);
