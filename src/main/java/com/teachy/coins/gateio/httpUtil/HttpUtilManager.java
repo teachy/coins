@@ -56,7 +56,7 @@ public class HttpUtilManager {
 			long keepAlive = super.getKeepAliveDuration(response, context);
 
 			if (keepAlive == -1) {
-				keepAlive = 5000;
+				keepAlive = 3000;
 			}
 			return keepAlive;
 		}
@@ -77,9 +77,9 @@ public class HttpUtilManager {
 	}
 
 	private static RequestConfig requestConfig = RequestConfig.custom()
-		.setSocketTimeout(20000)
-		.setConnectTimeout(20000)
-		.setConnectionRequestTimeout(20000)
+		.setSocketTimeout(10000)
+		.setConnectTimeout(10000)
+		.setConnectionRequestTimeout(10000)
 		.build();
 
 	public static HttpUtilManager getInstance() {

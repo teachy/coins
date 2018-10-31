@@ -58,6 +58,19 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         </layout>
     </appender>
 
+    <appender name="springLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/springLog.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/springLog-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <MaxHistory>10</MaxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] - [ %-5level ] [ %logger{50} : %line ] - %msg%n</pattern>
+        </layout>
+    </appender>
     <!--
         logger主要用于存放日志对象，也可以定义日志类型、级别
         name：表示匹配的logger类型前缀，也就是包的前半部分
@@ -67,12 +80,12 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         表示当前logger的appender-ref和rootLogger的appender-ref都有效
     -->
     <!-- hibernate logger -->
-    <logger name="com.teachy.coins.mapper" level="info" additivity="false">
+    <logger name="com.teachy.coins.mapper" level="info" additivity="true">
         <appender-ref ref="appLogAppender"/>
     </logger>
     <!-- Spring framework logger -->
-    <logger name="org.springframework" level="info" additivity="false">
-        <appender-ref ref="appLogAppender"/>
+    <logger name="org.springframework" level="info" additivity="true">
+        <appender-ref ref="springLog"/>
     </logger>
 
     <!--

@@ -13,7 +13,7 @@
     </select>
 
     <select id="getDisableCoins" resultType="com.teachy.coins.model.BaseCoins">
-        select name
+        select name,update_time updateTime
         from base_coins
         where enable = 0 or enable = 2
     </select>
