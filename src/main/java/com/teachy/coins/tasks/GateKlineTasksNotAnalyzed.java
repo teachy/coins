@@ -8,6 +8,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.DoubleStream;
 
@@ -40,14 +43,18 @@ public class GateKlineTasksNotAnalyzed extends BaseTask {
 	private final static String GROUP_SEC = "group_sec";
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
 	private static List<BaseCoins> coinsList;
+	ExecutorService executorService = Executors.newFixedThreadPool(2);
+
 	/**
 	 * 1m-long
 	 */
 	@Scheduled(cron = "31 1 0/4 * * ?")
-	public void getKline1m_NotAnalyzed() {
+	public void getKline1m_NotAnalyzed() throws InterruptedException {
 		coinsList = baseCoinsDAO.getDisableCoins();
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 60, 12, TabbleName.M1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 60, 12, TabbleName.M1.getValue(), countDownLatch));
+		countDownLatch.await();
 		coinsList.stream().filter(e -> e.getEnable() == 0).filter(
 			e -> DateUtils.differentDays(e.getUpdateTime()) > 5).forEach(e -> {
 			baseCoinsDAO.updateCoinsIsable(new BaseCoins(e.getName(), e.getWebsite(), 1));
@@ -58,81 +65,101 @@ public class GateKlineTasksNotAnalyzed extends BaseTask {
 	 * 5m-long
 	 */
 	@Scheduled(cron = "33 3 0/8 * * ?")
-	public void getKline5m_NotAnalyzed() {
+	public void getKline5m_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 300, 24, TabbleName.M5.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 300, 24, TabbleName.M5.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 10m-long
 	 */
 	@Scheduled(cron = "35 10 0/16 * * ?")
-	public void getKline10m_NotAnalyzed() {
+	public void getKline10m_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 48, TabbleName.M10.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 600, 48, TabbleName.M10.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 30m-long
 	 */
 	@Scheduled(cron = "37 7 0/23 * * ?")
-	public void getKline30m_NotAnalyzed() {
+	public void getKline30m_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 64, TabbleName.M30.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 1800, 64, TabbleName.M30.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 1h-long
 	 */
 	@Scheduled(cron = "39 5 0/23 * * ?")
-	public void getKline1h_NotAnalyzed() {
+	public void getKline1h_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 3600, 96, TabbleName.H1.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 3600, 96, TabbleName.H1.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 4h
 	 */
 	@Scheduled(cron = "15 10 0/23 * * ?")
-	public void getKline4h_NotAnalyzed() {
+	public void getKline4h_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 14400, 320, TabbleName.H4.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 14400, 320, TabbleName.H4.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 12h
 	 */
 	@Scheduled(cron = "19 11 0/12 * * ?")
-	public void getKline12h_NotAnalyzed() {
+	public void getKline12h_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 43200, 1200, TabbleName.H12.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 43200, 1200, TabbleName.H12.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
 	/**
 	 * 24h
 	 */
 	@Scheduled(cron = "24 21 0 * * ?")
-	public void getKline24h_NotAnalyzed() {
+	public void getKline24h_NotAnalyzed() throws InterruptedException {
+		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 86400, 2400, TabbleName.H24.getValue()));
+			e -> insert(e.getName(), CoinsType_USTD, 86400, 2400, TabbleName.H24.getValue(), countDownLatch));
+		countDownLatch.await();
 	}
 
-	private void insert(String coinName, String coinType, int time, double hour, String tableName) {
-		try {
-			String pairs = stockGet.candlestick2(coinName, coinType, time, hour, GROUP_SEC);
-			JSONObject res = JSONObject.parseObject(pairs);
-			if (hasData(res)) {
-				List<JSONArray> datas = (List<JSONArray>)res.get("data");
-				List<Kbase> klines = datas.stream().map(
-					(JSONArray line) -> getKbase(line, coinName, coinType,
-						tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
-					datas.size() - 1).collect(
-					toList());
-				insertKlines(klines);
+	private void insert(String coinName, String coinType, int time, double hour, String tableName,
+		CountDownLatch countDownLatch) {
+		executorService.execute(() -> {
+			try {
+				String pairs = stockGet.candlestick2(coinName, coinType, time, hour, GROUP_SEC);
+				JSONObject res = JSONObject.parseObject(pairs);
+				if (hasData(res)) {
+					List<JSONArray> datas = (List<JSONArray>)res.get("data");
+					List<Kbase> klines = datas.stream().map(
+						(JSONArray line) -> getKbase(line, coinName, coinType,
+							tableName)).sorted(Comparator.comparingLong(e -> e.getTimeLong())).limit(
+						datas.size() - 1).collect(
+						toList());
+					insertKlines(klines);
+				}
+			} catch (Exception e) {
+				//do nothing
+			} finally {
+				countDownLatch.countDown();
 			}
-		} catch (Exception e) {
-			//do nothing
-		}
+		});
+
 	}
 
 	private Kbase getKbase(JSONArray line, String name, String type, String tableName) {

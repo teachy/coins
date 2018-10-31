@@ -96,7 +96,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline10m() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -107,7 +107,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline30m() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -118,7 +118,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline1h() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -129,7 +129,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline2h() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -140,7 +140,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline4h() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -151,7 +151,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline12h() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 43200, 1500, TabbleName.H12.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 43200, 1500, TabbleName.H12.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -162,7 +162,7 @@ public class GateKlineTasks extends BaseTask {
 	public void getKline24h() throws InterruptedException {
 		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
 		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 86400, 3000, TabbleName.H24.getValue(),countDownLatch));
+			e -> insert(e.getName(), CoinsType_USTD, 86400, 3000, TabbleName.H24.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -181,35 +181,7 @@ public class GateKlineTasks extends BaseTask {
 						toList());
 					Collections.reverse(klines);
 					insertKlines(klines.stream().limit(5).collect(toList()));
-					if (warningList.contains(tableName) || noWarningList.contains(tableName)) {
-						int volume = checkVolume(klines);
-						int price = checkPrice(klines);
-						int count = volume + price;
-						if (price > 1 && volume > 1) {
-							if (warningList.contains(tableName)) {
-								Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
-								Warning warning1 = warningDAO.selectWarning(warning);
-								if (warning1 == null) {
-									warningDAO.insert(warning);
-								} else {
-									warning.setId(warning1.getId());
-									warningDAO.updateById(warning);
-								}
-								String title = WEBSITE + ":" + coinName;
-								if (emailList.get(title) == null) {
-									sendEmail(warning, title);
-								} else {
-									if (DateUtils.differentDays(emailList.get(title)) > 1) {
-										sendEmail(warning, title);
-									}
-								}
-							} else {
-								//If an alarm is generated during this time period, it will not be followed for a short time.
-								baseCoinsDAO.updateCoinsIsable(new BaseCoins(coinName, WEBSITE, 0));
-							}
-
-						}
-					}
+					checkWarning(coinName, tableName, klines);
 				}
 			} catch (Exception e) {
 				//do nothing
@@ -217,6 +189,38 @@ public class GateKlineTasks extends BaseTask {
 				countDownLatch.countDown();
 			}
 		});
+	}
+
+	private void checkWarning(String coinName, String tableName, List<Kbase> klines) {
+		if (warningList.contains(tableName) || noWarningList.contains(tableName)) {
+			int volume = checkVolume(klines);
+			int price = checkPrice(klines);
+			int count = volume + price;
+			if (price > 1 && volume > 1) {
+				if (warningList.contains(tableName)) {
+					Warning warning = new Warning(WEBSITE, coinName, volume, price, count, 0, tableName);
+					Warning warning1 = warningDAO.selectWarning(warning);
+					if (warning1 == null) {
+						warningDAO.insert(warning);
+					} else {
+						warning.setId(warning1.getId());
+						warningDAO.updateById(warning);
+					}
+					String title = WEBSITE + ":" + coinName;
+					if (emailList.get(title) == null) {
+						sendEmail(warning, title);
+					} else {
+						if (DateUtils.differentDays(emailList.get(title)) > 1) {
+							sendEmail(warning, title);
+						}
+					}
+				} else {
+					//If an alarm is generated during this time period, it will not be followed for a short time.
+					baseCoinsDAO.updateCoinsIsable(new BaseCoins(coinName, WEBSITE, 0));
+				}
+
+			}
+		}
 	}
 
 	private void sendEmail(Warning warning, String title) {
