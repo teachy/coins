@@ -53,7 +53,7 @@ public class GateKlineTasks extends BaseTask {
 	private List<String> noWarningList = new ArrayList<>();
 	private static List<BaseCoins> coinsList;
 	private Map<String, String> emailList = new HashMap<>();
-	ExecutorService executorService = Executors.newFixedThreadPool(3);
+	ExecutorService executorService = Executors.newFixedThreadPool(4);
 
 	/**
 	 * 1m
@@ -63,7 +63,6 @@ public class GateKlineTasks extends BaseTask {
 		if (first) {
 			init();
 			first = false;
-			warningList.add(TabbleName.M1.getValue());
 			warningList.add(TabbleName.M5.getValue());
 			warningList.add(TabbleName.M10.getValue());
 			warningList.add(TabbleName.M30.getValue());
@@ -180,7 +179,7 @@ public class GateKlineTasks extends BaseTask {
 						datas.size() - 1).collect(
 						toList());
 					Collections.reverse(klines);
-					insertKlines(klines.stream().limit(5).collect(toList()));
+					insertKlines(klines.stream().limit(4).collect(toList()));
 					checkWarning(coinName, tableName, klines);
 				}
 			} catch (Exception e) {
@@ -298,20 +297,29 @@ public class GateKlineTasks extends BaseTask {
 			return 0;
 		}
 		double firstVolume = list.get(0).getVolume();
+		if (firstVolume <= 0) {
+			return 0;
+		}
 		List<Double> newList = new ArrayList();
+		List<Double> not0List = new ArrayList();
 		for (Kbase kbase : list) {
-			if (kbase.getVolume() <= firstVolume) {
-				if (kbase.getVolume() > 0) {
-					newList.add(kbase.getVolume());
+			double temdouble = kbase.getVolume();
+			if (temdouble <= firstVolume) {
+				newList.add(kbase.getVolume());
+				if (temdouble > 0) {
+					not0List.add(temdouble);
 				}
 			} else {
 				break;
 			}
 		}
-		if (newList.size() > 10) {
+		if (newList.size() > 10 && not0List.size() > 2) {
 			DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
 			DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
 			double avg = doubleSummaryStatistics.getAverage();
+			if (avg <= 0) {
+				return 0;
+			}
 			return (int)(firstVolume / avg);
 		}
 		return 0;
