@@ -45,12 +45,12 @@ public class GateKlineTasks extends BaseTask {
 	private static IStockRestApi stockGet = new StockRestApiImpl(query_url);
 	private static IStockRestApi stockPost = new StockRestApiImpl(trade_url);
 	private final static String WEBSITE = "gate";
-	private final static String GROUP_SET = "group_set";
 	private final static String GROUP_SEC = "group_sec";
 	private boolean first = true;
 	private final String CoinsType_USTD = CoinsType.USDT.getType();
 	private List<String> warningList = new ArrayList<>();
 	private List<String> noWarningList = new ArrayList<>();
+	private List<String> attentionList = new ArrayList<>();
 	private static List<BaseCoins> coinsList;
 	private Map<String, String> emailList = new HashMap<>();
 	ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -67,6 +67,7 @@ public class GateKlineTasks extends BaseTask {
 			warningList.add(TabbleName.M5.getValue());
 			warningList.add(TabbleName.M10.getValue());
 			warningList.add(TabbleName.M30.getValue());
+			warningList.add(TabbleName.H1.getValue());
 			noWarningList.add(TabbleName.H12.getValue());
 			noWarningList.add(TabbleName.H24.getValue());
 		}
@@ -83,9 +84,9 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "12 0/5 * * * ?")
 	public void getKline5m() throws InterruptedException {
-		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
-		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 300, 10, TabbleName.M5.getValue(), countDownLatch));
+		CountDownLatch countDownLatch = new CountDownLatch(attentionList.size());
+		attentionList.stream().forEach(
+			e -> insert(e, CoinsType_USTD, 300, 10, TabbleName.M5.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -94,9 +95,9 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "17 0/10 * * * ?")
 	public void getKline10m() throws InterruptedException {
-		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
-		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 600, 20, TabbleName.M10.getValue(), countDownLatch));
+		CountDownLatch countDownLatch = new CountDownLatch(attentionList.size());
+		attentionList.stream().forEach(
+			e -> insert(e, CoinsType_USTD, 600, 20, TabbleName.M10.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -105,9 +106,9 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "27 0/30 * * * ?")
 	public void getKline30m() throws InterruptedException {
-		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
-		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 1800, 60, TabbleName.M30.getValue(), countDownLatch));
+		CountDownLatch countDownLatch = new CountDownLatch(attentionList.size());
+		attentionList.stream().forEach(
+			e -> insert(e, CoinsType_USTD, 1800, 60, TabbleName.M30.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -116,31 +117,9 @@ public class GateKlineTasks extends BaseTask {
 	 */
 	@Scheduled(cron = "49 1 0/1 * * ?")
 	public void getKline1h() throws InterruptedException {
-		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
-		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 3600, 120, TabbleName.H1.getValue(), countDownLatch));
-		countDownLatch.await();
-	}
-
-	/**
-	 * 2h
-	 */
-	@Scheduled(cron = "11 1 0/2 * * ?")
-	public void getKline2h() throws InterruptedException {
-		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
-		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 7200, 240, TabbleName.H2.getValue(), countDownLatch));
-		countDownLatch.await();
-	}
-
-	/**
-	 * 4h
-	 */
-	@Scheduled(cron = "15 1 0/4 * * ?")
-	public void getKline4h() throws InterruptedException {
-		CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
-		coinsList.stream().forEach(
-			e -> insert(e.getName(), CoinsType_USTD, 14400, 480, TabbleName.H4.getValue(), countDownLatch));
+		CountDownLatch countDownLatch = new CountDownLatch(attentionList.size());
+		attentionList.stream().forEach(
+			e -> insert(e, CoinsType_USTD, 3600, 120, TabbleName.H1.getValue(), countDownLatch));
 		countDownLatch.await();
 	}
 
@@ -166,6 +145,18 @@ public class GateKlineTasks extends BaseTask {
 		countDownLatch.await();
 	}
 
+	/**
+	 * update enable
+	 */
+	@Scheduled(cron = "31 1 0/12 * * ?")
+	public void getKline1m_NotAnalyzed() {
+		coinsList = baseCoinsDAO.getDisableCoins();
+		coinsList.stream().filter(e -> e.getEnable() == 0).filter(
+			e -> DateUtils.differentDays(e.getUpdateTime()) > 5).forEach(e -> {
+			baseCoinsDAO.updateCoinsIsable(new BaseCoins(e.getName(), e.getWebsite(), 1));
+		});
+	}
+
 	private void insert(String coinName, String coinType, int time, double hour, String tableName,
 		CountDownLatch countDownLatch) {
 		executorService.execute(() -> {
@@ -180,7 +171,6 @@ public class GateKlineTasks extends BaseTask {
 						datas.size() - 1).collect(
 						toList());
 					Collections.reverse(klines);
-					insertKlines(klines.stream().limit(5).collect(toList()));
 					checkWarning(coinName, tableName, klines);
 				}
 			} catch (Exception e) {
@@ -206,12 +196,20 @@ public class GateKlineTasks extends BaseTask {
 						warning.setId(warning1.getId());
 						warningDAO.updateById(warning);
 					}
-					String title = WEBSITE + ":" + coinName;
-					if (emailList.get(title) == null) {
-						sendEmail(warning, title);
+					if (tableName.equals(TabbleName.M1.getValue())) {
+						if (!attentionList.contains(coinName)) {
+							attentionList.add(coinName);
+						}
 					} else {
-						if (DateUtils.differentDays(emailList.get(title)) > 1) {
+						String title = WEBSITE + ":" + coinName;
+						if (emailList.get(title) == null) {
 							sendEmail(warning, title);
+							attentionList.remove(coinName);
+						} else {
+							if (DateUtils.differentDays(emailList.get(title)) > 1) {
+								sendEmail(warning, title);
+								attentionList.remove(coinName);
+							}
 						}
 					}
 				} else {
@@ -246,15 +244,6 @@ public class GateKlineTasks extends BaseTask {
 		return res.getString("result").equals("true");
 	}
 
-	private void insertKlines(List<Kbase> klines) {
-		klines.stream().forEach((Kbase each) -> {
-			try {
-				klineDAO.insert(each);
-			} catch (Exception e) {
-			}
-		});
-	}
-
 	private void init() {
 		try {
 			String res = stockGet.pairs();
@@ -287,7 +276,7 @@ public class GateKlineTasks extends BaseTask {
 			double avg = doubleSummaryStatistics.getAverage();
 			if (firstAvg > avg) {
 				return (int)(new BigDecimal((firstAvg - avg) / avg).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()
-					* 15);
+					* 20);
 			}
 		}
 		return 0;
@@ -298,12 +287,13 @@ public class GateKlineTasks extends BaseTask {
 			return 0;
 		}
 		double firstVolume = list.get(0).getVolume();
+		if (firstVolume <= 0) {
+			return 0;
+		}
 		List<Double> newList = new ArrayList();
 		for (Kbase kbase : list) {
 			if (kbase.getVolume() <= firstVolume) {
-				if (kbase.getVolume() > 0) {
-					newList.add(kbase.getVolume());
-				}
+				newList.add(kbase.getVolume());
 			} else {
 				break;
 			}
@@ -312,6 +302,9 @@ public class GateKlineTasks extends BaseTask {
 			DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
 			DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
 			double avg = doubleSummaryStatistics.getAverage();
+			if (avg <= 0) {
+				return 0;
+			}
 			return (int)(firstVolume / avg);
 		}
 		return 0;

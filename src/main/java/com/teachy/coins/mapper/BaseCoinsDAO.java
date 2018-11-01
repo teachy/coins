@@ -17,4 +17,6 @@ public interface BaseCoinsDAO {
 	List<BaseCoins> getDisableCoins();
 
 	void updateCoinsIsable(BaseCoins raseCoins);
+
+	List<BaseCoins> getAllCoins();
 }
