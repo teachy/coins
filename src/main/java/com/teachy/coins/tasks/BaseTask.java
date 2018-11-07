@@ -10,7 +10,7 @@ import com.teachy.coins.mapper.KlineDAO;
 import com.teachy.coins.mapper.WarningDAO;
 import com.teachy.coins.utils.SendEmail;
 
-@Component
+//@Component
 public class BaseTask {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired

@@ -37,7 +37,7 @@ import com.teachy.coins.utils.DateUtils;
 /**
  * Timely tracking and early warning
  */
-@Component
+//@Component
 public class GateKlineTasks extends BaseTask {
 
 	private final static String query_url = "https://data.gateio.io";
