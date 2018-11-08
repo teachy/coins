@@ -1,12 +1,15 @@
 package com.teachy.coins.utils;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class DateUtils {
+	private static String formatter = "yyyy-MM-dd HH:mm:ss";
+	private static final DateTimeFormatter ftf = DateTimeFormatter.ofPattern(formatter);
 
 	public static String convertTimeToString(long time, String pattern) {
 		DateTimeFormatter ftf = DateTimeFormatter.ofPattern(pattern);
@@ -14,7 +17,7 @@ public class DateUtils {
 	}
 
 	public static String convertTimeToString(long time) {
-		return convertTimeToString(time, "yyyy-MM-dd HH:mm:ss");
+		return convertTimeToString(time, formatter);
 	}
 
 	public static long differentDays(String time) {
@@ -32,8 +35,17 @@ public class DateUtils {
 	}
 
 	public static LocalDateTime StringToDate(String time) {
-		DateTimeFormatter ftf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		return LocalDateTime.parse(time, ftf);
+	}
+
+	public static String plusDay(int num, String time) {
+		DateTimeFormatter ftf = getDateTimeFormatter("yyyy-MM-dd");
+		LocalDate btime = LocalDate.parse(time, ftf);
+		return btime.plusDays(num).format(ftf);
+	}
+
+	public static DateTimeFormatter getDateTimeFormatter(String formatter) {
+		return DateTimeFormatter.ofPattern(formatter);
 	}
 
 }

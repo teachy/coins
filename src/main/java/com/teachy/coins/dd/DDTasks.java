@@ -1,4 +1,4 @@
-package com.teachy.coins.tasks;
+package com.teachy.coins.dd;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +30,7 @@ import com.teachy.coins.utils.StringUtils;
  */
 @Component
 public class DDTasks {
-	private static HttpClient httpClient;
+	public static HttpClient httpClient;
 	private static HttpResponse response;
 	private static PoolingHttpClientConnectionManager connectionManager;
 	private static RequestConfig requestConfig;
@@ -73,7 +73,7 @@ public class DDTasks {
 		return id + ":" + num;
 	}
 
-	private static String getAllContent(HttpResponse response) throws IOException {
+	public static String getAllContent(HttpResponse response) throws IOException {
 		HttpEntity entity = response.getEntity();
 		InputStream is = null;
 		String responseData;
