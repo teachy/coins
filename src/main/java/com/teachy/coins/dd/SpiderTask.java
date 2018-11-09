@@ -72,7 +72,7 @@ public class SpiderTask {
 				fx2(evelist);
 			}
 		}
-		System.out.println("getCount:" + getCount + ":" + test);
+		System.out.println("getCount:" + getCount + ":" + test1);
 		getCount = 0;
 	}
 
@@ -98,16 +98,22 @@ public class SpiderTask {
 				}
 			}
 			int bs = 1;
+			int temcout=0;
 			for (int kj : list) {
+				use = use + tem * bs;
 				if (tz.contains(kj)) {
-					get = get + 990 * bs - tem * bs;
+					temcout= temcout-tem * bs+990 * bs;
+					get = get + 990 * bs;
 					bs = 1;
+//					System.out.println(temcout);
 				} else {
-					use = use + tem * bs;
-					if (bs < test1) {
+					temcout= temcout-tem * bs;
+					if (bs < 12) {
 						bs++;
 					}
+//					System.out.println(temcout);
 				}
+
 			}
 			int temcha = get - use;
 //			System.out.println(temcha);
