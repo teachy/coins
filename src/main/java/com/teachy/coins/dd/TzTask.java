@@ -60,9 +60,7 @@ public class TzTask {
 				DD dd = get28(kfget);
 				if (Integer.parseInt(dd.getJcTime()) > 10) {
 					if (jgListforFK.size() > 4) {
-						logger.info("fk:" + dd.toString());
 						int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
-						logger.info("fk sleep:" + sleepTime);
 						Thread.sleep(sleepTime * 1000);
 						if (jgListforFK.contains(dd.jieguo)) {
 							bsFK = 1;
@@ -73,7 +71,6 @@ public class TzTask {
 						}
 						tz28(dd, beeting * bsFK, postFK, jgListforFK);
 						int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
-						logger.info("fk tz complete sleep:" + sleep1 + ", thread: " + Thread.currentThread().getId());
 						Thread.sleep(sleep1 * 1000);
 					}
 				}
@@ -100,9 +97,7 @@ public class TzTask {
 				DD dd = get28(jsget);
 				if (Integer.parseInt(dd.getJcTime()) > 10) {
 					if (jgListforJS.size() > 4) {
-						logger.info("js:" + dd.toString());
 						int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
-						logger.info("js sleep:" + sleepTime);
 						Thread.sleep(sleepTime * 1000);
 						if (jgListforJS.contains(dd.jieguo)) {
 							bsJS = 1;
@@ -113,7 +108,6 @@ public class TzTask {
 						}
 						tz28(dd, beeting * bsJS, postJS, jgListforJS);
 						int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
-						logger.info("js tz complete sleep:" + sleep1);
 						Thread.sleep(sleep1 * 1000);
 					}
 				}
