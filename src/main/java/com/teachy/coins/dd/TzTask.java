@@ -45,7 +45,7 @@ public class TzTask {
 	private int beeting = 10000;
 
 	@Async
-	@Scheduled(cron = "59 0/1 * * * ?")
+	@Scheduled(cron = "1 0/1 * * * ?")
 	public void tzForFK() {
 		try {
 			if (!yesterdayFK.equals(getYesterday())) {
@@ -82,7 +82,7 @@ public class TzTask {
 	}
 
 	@Async
-	@Scheduled(cron = "49 0/1 * * * ?")
+	@Scheduled(cron = "51 0/1 * * * ?")
 	public void tzForJS() {
 		try {
 			if (!yesterdayJS.equals(getYesterday())) {

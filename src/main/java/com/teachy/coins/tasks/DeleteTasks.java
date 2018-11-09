@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.teachy.coins.enumers.TabbleName;
 
-@Component
+//@Component
 public class DeleteTasks extends BaseTask {
 
 	@Scheduled(cron = "56 56 23 * * ?")
