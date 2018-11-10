@@ -16,8 +16,8 @@ public class Times {
 	 */
 	public static Boolean getCheckTime() {
 		int currentTime = getTime();
-		List<Integer> list0 = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
-		List<Integer> list20 = Arrays.asList(0);
+		List<Integer> list0 = Arrays.asList(1, 2, 3, 4, 5, 6);
+		List<Integer> list20 = Arrays.asList(0,7);
 		List<Integer> list40 = Arrays.asList(8, 23);
 		List<Integer> list60 = Arrays.asList(12, 18);
 		List<Integer> list80 = Arrays.asList(11, 22);

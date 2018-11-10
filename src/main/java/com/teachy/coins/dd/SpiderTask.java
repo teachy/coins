@@ -45,11 +45,11 @@ public class SpiderTask {
 			allres.add("");
 		}
 		String time = "2018-10-26";
-		for (int i = 0; i <= 13; i++) {
+		for (int i = 0; i <= 14; i++) {
 			evemap.clear();
 			evelist.clear();
 			HttpGet get = new HttpGet(
-				"https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=29&c=100&d=" + DateUtils.plusDay(i, time)
+				"https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=155&c=100&d=" + DateUtils.plusDay(i, time)
 					+ "&_=" + System.currentTimeMillis());
 			HttpResponse response = DDTasks.httpClient.execute(get);
 			String res = DDTasks.getAllContent(response);
@@ -72,7 +72,7 @@ public class SpiderTask {
 				fx2(evelist);
 			}
 		}
-		System.out.println("getCount:" + getCount + ":" + test1);
+		System.out.println("getCount:" + getCount + ":" + test);
 		getCount = 0;
 	}
 
@@ -90,7 +90,7 @@ public class SpiderTask {
 				double temd = ((double)count[i] / lastres.size()) / jg[i > 13 ? 27 - i : i];
 				BigDecimal b = new BigDecimal(temd);
 				temd = b.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-				if (temd < 0.95) {
+				if (temd < 0.84) {
 					if (i > 2 && i < 25) {
 						tz.add(i);
 						tem = tem + bet[i];
@@ -108,15 +108,16 @@ public class SpiderTask {
 //					System.out.println(temcout);
 				} else {
 					temcout= temcout-tem * bs;
-					if (bs < 12) {
+					if (bs < 18) {
 						bs++;
 					}
 //					System.out.println(temcout);
 				}
 
 			}
+			System.out.println(tz);
 			int temcha = get - use;
-//			System.out.println(temcha);
+			System.out.println(temcha);
 			getCount = getCount + temcha;
 			lastres.clear();
 			lastres.addAll(list);
