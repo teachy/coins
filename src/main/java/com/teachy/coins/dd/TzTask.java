@@ -40,16 +40,16 @@ public class TzTask {
     static HttpPost postJS = new HttpPost("http://www.game3799.com/Speed28/Bet");
     private int bsJS = 1;
     private int bsFK = 1;
-    private int beeting = 60000;
+    private int beeting = 18888;
 
     @Async
     @Scheduled(cron = "1 0/1 * * * ?")
     public void tzForFK() {
         try {
-            if (!yesterdayFK.equals(getYesterday())) {
+            if (!yesterdayFK.equals(getYesterday())||jgListforFK.size()<1) {
                 yesterdayFK = getYesterday();
                 jgListforFK.clear();
-                Thread.sleep(100000);
+                Thread.sleep(50000);
                 String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=29&c=100&d=" + yesterdayFK
                         + "&_=" + System.currentTimeMillis();
                 jgListforFK = getList(url, 0.95);
@@ -86,10 +86,10 @@ public class TzTask {
     @Scheduled(cron = "51 0/1 * * * ?")
     public void tzForJS() {
         try {
-            if (!yesterdayJS.equals(getYesterday())) {
+            if (!yesterdayJS.equals(getYesterday())||jgListforJS.size()<1) {
                 yesterdayJS = getYesterday();
                 jgListforJS.clear();
-                Thread.sleep(100000);
+                Thread.sleep(50000);
                 String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=155&c=100&d=" + yesterdayJS
                         + "&_=" + System.currentTimeMillis();
                 jgListforJS = getList(url, 0.94);
@@ -143,7 +143,7 @@ public class TzTask {
         if (jsonObject.containsKey("list")) {
             JSONArray jsonArray = jsonObject.getJSONArray("list");
             if (jsonArray != null) {
-                if (jsonArray.size() < 900) {
+                if (jsonArray.size() < 500) {
                     return tz;
                 }
                 for (int i1 = 0; i1 < jsonArray.size(); i1++) {

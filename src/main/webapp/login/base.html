@@ -15,9 +15,7 @@
     $(document).ready(function () {
         $("#refresh").click(function () {
             $.get("/login/GetIdAndGlod?" + Math.random(), function (data) {
-                var id_id = data.split(":")[0];
                 var id_gold = data.split(":")[1];
-                $("#id_id").val(id_id);
                 $("#id_gold").val(id_gold);
             });
         });
@@ -25,8 +23,7 @@
 </script>
 
 <body>
-id：<input id="id_id" type='text' name='name' value=''> <br/> gold：
-<input id="id_gold" type='text' name='name' value=''> <br/>
+gold：<input id="id_gold" type='text' name='name' value=''> <br/>
 <button id="refresh"/>
 </body>
 
