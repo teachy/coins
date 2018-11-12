@@ -1,17 +1,10 @@
 package com.teachy.coins.dd;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.teachy.coins.mapper.Dd3799DDAO;
-import com.teachy.coins.utils.DateUtils;
-import com.teachy.coins.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +13,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import com.teachy.coins.utils.DateUtils;
 
 @Component
 @EnableAsync
@@ -41,8 +30,14 @@ public class TzTask {
 	private int bsJS = 1;
 	private int bsFK = 1;
 	private int beeting = 18888;
+	private double fkxs = 0.95;
+	private double jsxs = 0.94;
+	private int jsMax = 15;
+	private int fkMax = 13;
 	@Autowired
 	private DDSprider dDSprider;
+	@Autowired
+	private SFTest sfTest;
 	@Async
 	@Scheduled(cron = "1 0/1 * * * ?")
 	public void tzForFK() {
@@ -53,11 +48,16 @@ public class TzTask {
 					jgListforFK.clear();
 					String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=29&c=100&d=" + yesterdayFK
 						+ "&_=" + System.currentTimeMillis();
-					jgListforFK = dDSprider.getList(url, 0.95);
+					jgListforFK = dDSprider.getList(url, fkxs);
 					logger.info("tzForFK:" + yesterdayFK + ":" + jgListforFK);
 				}
 
 				DD dd = dDSprider.get28(kfget);
+				Runnable runnable = () ->{
+					sfTest.test(dd,"FK",fkxs,fkMax,jgListforFK);
+				};
+				Thread thread = new Thread(runnable);
+				thread.start();
 				if (Integer.parseInt(dd.getJcTime()) > 10) {
 					if (jgListforFK.size() > 2) {
 						int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
@@ -65,7 +65,7 @@ public class TzTask {
 						if (jgListforFK.contains(dd.jieguo)) {
 							bsFK = 1;
 						} else {
-							if (bsFK < 13) {
+							if (bsFK < fkMax) {
 								bsFK++;
 							}
 						}
@@ -93,11 +93,16 @@ public class TzTask {
 					jgListforJS.clear();
 					String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=155&c=100&d=" + yesterdayJS
 						+ "&_=" + System.currentTimeMillis();
-					jgListforJS = dDSprider.getList(url, 0.94);
+					jgListforJS = dDSprider.getList(url, jsxs);
 					logger.info("tzForJS:" + yesterdayJS + ":" + jgListforJS);
 				}
 
 				DD dd = dDSprider.get28(jsget);
+				Runnable runnable = () ->{
+					sfTest.test(dd,"JS",jsxs,jsMax,jgListforJS);
+				};
+				Thread thread = new Thread(runnable);
+				thread.start();
 				if (Integer.parseInt(dd.getJcTime()) > 10) {
 					if (jgListforJS.size() > 2) {
 						int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
@@ -105,7 +110,7 @@ public class TzTask {
 						if (jgListforJS.contains(dd.jieguo)) {
 							bsJS = 1;
 						} else {
-							if (bsJS < 18) {
+							if (bsJS < jsMax) {
 								bsJS++;
 							}
 						}

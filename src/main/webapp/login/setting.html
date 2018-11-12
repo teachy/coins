@@ -1,0 +1,61 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Setting</title>
+    <script src="/js/jquery-3.2.1.min.js"></script>
+</head>
+<script>
+    $(function () {
+        setInterval(refresh, 90000);
+
+        function refresh() {
+            $("#refresh").click();
+        }
+    })
+    $(document).ready(function () {
+        $("#refresh").click(function () {
+            $.get("/login/GetTest?" + Math.random(), function (data) {
+                var js1 = data.split(":")[0];
+                $("#js1").val(js1);
+                var fk1 = data.split(":")[1];
+                $("#fk1").val(fk1);
+                $("#sum1").val(parseInt(fk1)+parseInt(js1));
+
+                var js2 = data.split(":")[2];
+                $("#js2").val(js2);
+                var fk2 = data.split(":")[3];
+                $("#fk2").val(fk2);
+                $("#sum2").val(parseInt(fk2)+parseInt(js2));
+
+                var js3 = data.split(":")[4];
+                $("#js3").val(js3);
+                var fk3 = data.split(":")[5];
+                $("#fk3").val(fk3);
+                $("#sum3").val(parseInt(fk3)+parseInt(js3));
+
+                var id_gold = data.split(":")[7];
+                $("#id_gold").val(id_gold);
+            });
+        });
+    });
+</script>
+
+<body>
+gold：<input id="id_gold" type='text' name='name' value=''> <br/>
+<br/>
+js1：<input id="js1" type='text' name='js1' value=''> <br/>
+fk1：<input id="fk1" type='text' name='fk1' value=''> <br/>
+sum1：<input id="sum1" type='text' name='sum1' value=''> <br/>
+<br/>
+js2：<input id="js2" type='text' name='js2' value=''> <br/>
+fk2：<input id="fk2" type='text' name='fk2' value=''> <br/>
+sum2：<input id="sum2" type='text' name='sum2' value=''> <br/>
+<br/>
+js3：<input id="js3" type='text' name='js3' value=''> <br/>
+fk3：<input id="fk3" type='text' name='fk3' value=''> <br/>
+sum3：<input id="sum3" type='text' name='sum3' value=''> <br/>
+<button id="refresh"/>
+</body>
+
+</html>

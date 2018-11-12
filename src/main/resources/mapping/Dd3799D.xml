@@ -9,7 +9,7 @@
 
     <select id="getList" parameterType="string" resultType="int">
         select jieguo from dd_3799d
-        where type=#{_parameter} order by qihao limit 1000
+        where type=#{_parameter} order by qihao desc limit 1000
     </select>
 
     <select id="getListByDay" parameterType="string" resultType="int">

@@ -31,7 +31,8 @@ public class SpiderTask {
 	int getCount = 0;
 	double test = 0.80;
 	int test1 = 0;
-
+    List<StringBuffer> stringBuffers = new ArrayList<>();
+    int bj =1;
 	@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory() throws IOException {
 		Map<Integer, Integer> map = new HashMap<>();
@@ -46,7 +47,7 @@ public class SpiderTask {
 			allres.add("");
 		}
 		String time = "2018-10-26";
-		for (int i = 0; i <= 14; i++) {
+		for (int i = 0; i <= 17; i++) {
 			evemap.clear();
 			evelist.clear();
 			HttpGet get = new HttpGet(
@@ -75,7 +76,7 @@ public class SpiderTask {
 			}
 //			fx4(list);
 		}
-		System.out.println("getCount:" + getCount + ":" + test);
+		System.out.println("getCount:" + getCount + ":" + test1);
 		getCount = 0;
 	}
 
@@ -97,7 +98,7 @@ public class SpiderTask {
 				double temd = ((double)count[i] / lastres.size()) / jg[i > 13 ? 27 - i : i];
 				BigDecimal b = new BigDecimal(temd);
 				temd = b.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-				if (temd < 0.84) {
+				if (temd < 0.94) {
 					if (i > 2 && i < 25) {
 						tz.add(i);
 						tem = tem + bet[i];
@@ -115,16 +116,16 @@ public class SpiderTask {
 //					System.out.println(temcout);
 				} else {
 					temcout= temcout-tem * bs;
-					if (bs < 18) {
+					if (bs < test1) {
 						bs++;
 					}
 //					System.out.println(temcout);
 				}
 
 			}
-			System.out.println(tz);
+//			System.out.print(tz);
 			int temcha = get - use;
-			System.out.println(temcha);
+			System.out.print(temcha+" ");
 			getCount = getCount + temcha;
 			lastres.clear();
 			lastres.addAll(list);

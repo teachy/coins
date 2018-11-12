@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.teachy.coins.dd.DDTasks;
+import com.teachy.coins.dd.SFTest;
 
 @RestController
 @RequestMapping("login")
@@ -38,5 +39,12 @@ public class LoginController {
 		@RequestParam String code, HttpServletResponse response) throws IOException {
 		DDTasks.login(name, password, code);
 		response.sendRedirect("/login/base.html");
+	}
+
+	@GetMapping("/GetTest")
+	@ResponseBody
+	public String GetTest() throws IOException {
+		return SFTest.js1 + ":" + SFTest.fk1 + ":" + SFTest.js2 + ":" + SFTest.fk2 + ":" + SFTest.js3 + ":"
+			+ SFTest.fk3 + ":" + DDTasks.getIdAndGold();
 	}
 }

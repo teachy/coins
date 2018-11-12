@@ -50,17 +50,19 @@ public class DDTasks {
 		httpClient = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
 	}
 
-	public static String login(String name, String password, String code) throws IOException {
-		HttpPost loginPost = new HttpPost(DOMAIN + "/Account/HomeLogon");
-		List<BasicNameValuePair> formParams = new ArrayList<>();
-		formParams.add(new BasicNameValuePair("UserName", name));
-		formParams.add(new BasicNameValuePair("Password", password));
-		formParams.add(new BasicNameValuePair("VCode", code));
-		loginPost.setEntity(new UrlEncodedFormEntity(formParams, "utf-8"));
-		loginPost.addHeader("Origin", DOMAIN);
-		loginPost.addHeader("Referer", DOMAIN);
-		response = httpClient.execute(loginPost);
-		return getAllContent(response);
+	public static void login(String name, String password, String code) throws IOException {
+		if(getIdAndGold().contains("null")){
+			HttpPost loginPost = new HttpPost(DOMAIN + "/Account/HomeLogon");
+			List<BasicNameValuePair> formParams = new ArrayList<>();
+			formParams.add(new BasicNameValuePair("UserName", name));
+			formParams.add(new BasicNameValuePair("Password", password));
+			formParams.add(new BasicNameValuePair("VCode", code));
+			loginPost.setEntity(new UrlEncodedFormEntity(formParams, "utf-8"));
+			loginPost.addHeader("Origin", DOMAIN);
+			loginPost.addHeader("Referer", DOMAIN);
+			response = httpClient.execute(loginPost);
+			getAllContent(response);
+		}
 	}
 
 	public static String getIdAndGold() throws IOException {
@@ -70,7 +72,7 @@ public class DDTasks {
 		String tem = getAllContent(response);
 		String id = StringUtils.getRegexStr(tem, "ID：(\\d+)");
 		String num = StringUtils.getRegexStr(tem, "</a>金豆：(.*?)<span ");
-		return id + ":" + num;
+		return "123456" + ":" + num;
 	}
 
 	public static String getAllContent(HttpResponse response) throws IOException {

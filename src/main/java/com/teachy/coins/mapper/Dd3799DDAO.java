@@ -12,8 +12,8 @@ public interface Dd3799DDAO {
 
 	int insert(Dd3799D dd3799D);
 
-	List<Integer> getList();
+	List<Integer> getList(String type);
 
-	List<Integer> getListByDay();
+	List<Integer> getListByDay(String type);
 
 }
