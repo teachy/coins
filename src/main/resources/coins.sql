@@ -11,7 +11,7 @@
  Target Server Version : 50723
  File Encoding         : 65001
 
- Date: 24/10/2018 12:23:55
+ Date: 12/11/2018 13:19:53
 */
 
 SET NAMES utf8mb4;
@@ -29,7 +29,22 @@ CREATE TABLE `base_coins`  (
   `update_time` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `name_website`(`name`, `website`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 163 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = MyISAM AUTO_INCREMENT = 175 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for dd_3799d
+-- ----------------------------
+DROP TABLE IF EXISTS `dd_3799d`;
+CREATE TABLE `dd_3799d`  (
+  `id` int(32) NOT NULL AUTO_INCREMENT,
+  `type` varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `qihao` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `jieguo` varchar(4) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `timeStr` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `timeDay` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `type_qihao`(`type`, `qihao`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3297 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for kline_10m
@@ -48,9 +63,6 @@ CREATE TABLE `kline_10m`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -96,9 +108,6 @@ CREATE TABLE `kline_1h`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -120,9 +129,6 @@ CREATE TABLE `kline_1m`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -168,9 +174,6 @@ CREATE TABLE `kline_2h`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -192,9 +195,6 @@ CREATE TABLE `kline_30m`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -216,9 +216,6 @@ CREATE TABLE `kline_4h`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -240,9 +237,6 @@ CREATE TABLE `kline_5m`  (
   `low` double(32, 16) NULL DEFAULT NULL COMMENT '最低阶',
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时间 非时间戳',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `special`(`website`, `type`, `name`, `time_long`) USING BTREE,
-  INDEX `website`(`website`) USING BTREE,
-  INDEX `type`(`type`) USING BTREE,
   INDEX `name`(`name`) USING BTREE,
   INDEX `time_long`(`time_long`) USING BTREE
 ) ENGINE = MyISAM CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
@@ -263,6 +257,6 @@ CREATE TABLE `warning`  (
   `timelong` bigint(32) NULL DEFAULT NULL,
   `time_str` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 151 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 153 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

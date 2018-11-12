@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.teachy.coins.mapper.Dd3799DDAO">
+    <insert id="insert" parameterType="com.teachy.coins.model.Dd3799D" keyProperty="id" useGeneratedKeys="true">
+    insert into dd_3799d(type,qihao,jieguo,timeStr,timeDay)
+         values (#{type},#{qihao}, #{jieguo},#{timeStr},#{timeDay})
+  </insert>
+
+
+    <select id="getList" parameterType="string" resultType="int">
+        select jieguo from dd_3799d
+        where type=#{_parameter} order by qihao limit 1000
+    </select>
+
+    <select id="getListByDay" parameterType="string" resultType="int">
+        select jieguo from dd_3799d
+        where type=#{_parameter} and timeDay=date_sub(curdate(),interval 1 day)
+    </select>
+
+</mapper>

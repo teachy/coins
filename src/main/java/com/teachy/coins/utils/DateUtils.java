@@ -48,4 +48,10 @@ public class DateUtils {
 		return DateTimeFormatter.ofPattern(formatter);
 	}
 
+	public static String getYesterday() {
+		DateTimeFormatter ftf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate btime = LocalDate.now();
+		return btime.plusDays(-1).format(ftf);
+	}
+
 }

@@ -37,6 +37,7 @@ public class SpiderTask {
 		Map<Integer, Integer> map = new HashMap<>();
 		Map<Integer, Integer> evemap = new HashMap<>();
 		List<Integer> evelist = new ArrayList<>();
+		List<Integer> list = new ArrayList<>();
 		allres.clear();
 		lastres.clear();
 		test = test + 0.01;
@@ -63,17 +64,23 @@ public class SpiderTask {
 						evemap.put(obj.getInteger("id"), obj.getInteger("num"));
 					}
 				}
-				List<Integer> list = new ArrayList<>();
+				list.clear();
 				map.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey())).forEachOrdered(
 					e -> list.add(e.getValue()));
 				evemap.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey())).forEachOrdered(
 					e -> evelist.add(e.getValue()));
 				//			fx3(evelist);
 				fx2(evelist);
+
 			}
+//			fx4(list);
 		}
 		System.out.println("getCount:" + getCount + ":" + test);
 		getCount = 0;
+	}
+
+	public void fx4(List<Integer> list){
+
 	}
 
 	public void fx2(List<Integer> list) {

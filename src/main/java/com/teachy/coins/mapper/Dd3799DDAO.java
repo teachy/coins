@@ -1,0 +1,19 @@
+package com.teachy.coins.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.teachy.coins.model.BaseCoins;
+import com.teachy.coins.model.Dd3799D;
+
+@Mapper
+public interface Dd3799DDAO {
+
+	int insert(Dd3799D dd3799D);
+
+	List<Integer> getList();
+
+	List<Integer> getListByDay();
+
+}
