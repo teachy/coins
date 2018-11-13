@@ -1,5 +1,6 @@
 package com.teachy.coins.dd;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Component;
 
 import com.teachy.coins.utils.DateUtils;
 
-@Component
-@EnableAsync
+//@Component
+//@EnableAsync
 public class TzTask {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private static String yesterdayJS = "";
@@ -34,48 +35,19 @@ public class TzTask {
 	private double jsxs = 0.94;
 	private int jsMax = 15;
 	private int fkMax = 13;
+	private long jsqh = 0;
+	private long fkqh = 0;
 	@Autowired
 	private DDSprider dDSprider;
 	@Autowired
 	private SFTest sfTest;
+
 	@Async
 	@Scheduled(cron = "1 0/1 * * * ?")
 	public void tzForFK() {
 		try {
 			if (!DDTasks.getIdAndGold().contains("null")) {
-				if (!yesterdayFK.equals(DateUtils.getYesterday()) || jgListforFK.size() < 2) {
-					yesterdayFK = DateUtils.getYesterday();
-					jgListforFK.clear();
-					String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=29&c=100&d=" + yesterdayFK
-						+ "&_=" + System.currentTimeMillis();
-					jgListforFK = dDSprider.getList(url, fkxs);
-					logger.info("tzForFK:" + yesterdayFK + ":" + jgListforFK);
-				}
-
-				DD dd = dDSprider.get28(kfget);
-				Runnable runnable = () ->{
-					sfTest.test(dd,"FK",fkxs,fkMax,jgListforFK);
-				};
-				Thread thread = new Thread(runnable);
-				thread.start();
-				if (Integer.parseInt(dd.getJcTime()) > 10) {
-					if (jgListforFK.size() > 2) {
-						int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
-						Thread.sleep(sleepTime * 1000);
-						if (jgListforFK.contains(dd.jieguo)) {
-							bsFK = 1;
-						} else {
-							if (bsFK < fkMax) {
-								bsFK++;
-							}
-						}
-						if (Times.getCheckTime()) {
-							dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
-						}
-						int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
-						Thread.sleep(sleep1 * 1000);
-					}
-				}
+				fkff1();
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -88,41 +60,8 @@ public class TzTask {
 	public void tzForJS() {
 		try {
 			if (!DDTasks.getIdAndGold().contains("null")) {
-				if (!yesterdayJS.equals(DateUtils.getYesterday()) || jgListforJS.size() < 2) {
-					yesterdayJS = DateUtils.getYesterday();
-					jgListforJS.clear();
-					String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=155&c=100&d=" + yesterdayJS
-						+ "&_=" + System.currentTimeMillis();
-					jgListforJS = dDSprider.getList(url, jsxs);
-					logger.info("tzForJS:" + yesterdayJS + ":" + jgListforJS);
-				}
-
-				DD dd = dDSprider.get28(jsget);
-				Runnable runnable = () ->{
-					sfTest.test(dd,"JS",jsxs,jsMax,jgListforJS);
-				};
-				Thread thread = new Thread(runnable);
-				thread.start();
-				if (Integer.parseInt(dd.getJcTime()) > 10) {
-					if (jgListforJS.size() > 2) {
-						int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
-						Thread.sleep(sleepTime * 1000);
-						if (jgListforJS.contains(dd.jieguo)) {
-							bsJS = 1;
-						} else {
-							if (bsJS < jsMax) {
-								bsJS++;
-							}
-						}
-						if (Times.getCheckTime()) {
-							dDSprider.tz28(dd, beeting * bsJS, postJS, jgListforJS);
-						}
-						int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
-						Thread.sleep(sleep1 * 1000);
-					}
-				}
+				jsff1();
 			}
-
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -139,4 +78,94 @@ public class TzTask {
 		}
 	}
 
+	private void jsff2() throws IOException, InterruptedException {
+
+	}
+
+	private void init(){
+		bsJS = 1;
+		bsFK = 1;
+		yesterdayJS = "";
+		yesterdayFK = "";
+		jgListforJS.clear();
+		jgListforFK.clear();
+	}
+
+	private void jsff1() throws IOException, InterruptedException {
+		if (!yesterdayJS.equals(DateUtils.getYesterday()) || jgListforJS.size() < 2) {
+			yesterdayJS = DateUtils.getYesterday();
+			jgListforJS.clear();
+			String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=155&c=100&d=" + yesterdayJS
+				+ "&_=" + System.currentTimeMillis();
+			jgListforJS = dDSprider.getList(url, jsxs);
+			logger.info("tzForJS:" + yesterdayJS + ":" + jgListforJS);
+		}
+
+		DD dd = dDSprider.get28(jsget);
+		if (dd.getTemQH() != jsqh) {
+			jsqh = dd.getTemQH();
+			Runnable runnable = () -> {
+				sfTest.test(dd, "JS", jsxs, jsMax, jgListforJS);
+			};
+			Thread thread = new Thread(runnable);
+			thread.start();
+		}
+		if (Integer.parseInt(dd.getJcTime()) > 10) {
+			if (jgListforJS.size() > 2) {
+				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
+				Thread.sleep(sleepTime * 1000);
+				if (jgListforJS.contains(dd.jieguo)) {
+					bsJS = 1;
+				} else {
+					if (bsJS < jsMax) {
+						bsJS++;
+					}
+				}
+				if (Times.getCheckTime()) {
+					dDSprider.tz28(dd, beeting * bsJS, postJS, jgListforJS);
+				}
+				int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
+				Thread.sleep(sleep1 * 1000);
+			}
+		}
+	}
+
+	private void fkff1() throws IOException, InterruptedException {
+		if (!yesterdayFK.equals(DateUtils.getYesterday()) || jgListforFK.size() < 2) {
+			yesterdayFK = DateUtils.getYesterday();
+			jgListforFK.clear();
+			String url = "https://www.yuce28.com/action/Handler.ashx?cmd=getdatac&t=29&c=100&d=" + yesterdayFK
+				+ "&_=" + System.currentTimeMillis();
+			jgListforFK = dDSprider.getList(url, fkxs);
+			logger.info("tzForFK:" + yesterdayFK + ":" + jgListforFK);
+		}
+
+		DD dd = dDSprider.get28(kfget);
+		if (dd.getTemQH() != fkqh) {
+			fkqh = dd.getTemQH();
+			Runnable runnable = () -> {
+				sfTest.test(dd, "FK", fkxs, fkMax, jgListforFK);
+			};
+			Thread thread = new Thread(runnable);
+			thread.start();
+		}
+		if (Integer.parseInt(dd.getJcTime()) > 10) {
+			if (jgListforFK.size() > 2) {
+				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
+				Thread.sleep(sleepTime * 1000);
+				if (jgListforFK.contains(dd.jieguo)) {
+					bsFK = 1;
+				} else {
+					if (bsFK < fkMax) {
+						bsFK++;
+					}
+				}
+				if (Times.getCheckTime()) {
+					dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
+				}
+				int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
+				Thread.sleep(sleep1 * 1000);
+			}
+		}
+	}
 }

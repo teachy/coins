@@ -46,8 +46,10 @@ public class SpiderTask {
 		for (int i = 0; i <= 27; i++) {
 			allres.add("");
 		}
-		String time = "2018-10-26";
-		for (int i = 0; i <= 17; i++) {
+//		String time = "2018-10-26";
+//		for (int i = 0; i <= 17; i++) {
+				String time = "2018-11-11";
+				for (int i = 0; i <= 1; i++) {
 			evemap.clear();
 			evelist.clear();
 			HttpGet get = new HttpGet(
@@ -113,13 +115,13 @@ public class SpiderTask {
 					temcout= temcout-tem * bs+990 * bs;
 					get = get + 990 * bs;
 					bs = 1;
-//					System.out.println(temcout);
+					System.out.println(temcout);
 				} else {
 					temcout= temcout-tem * bs;
 					if (bs < test1) {
 						bs++;
 					}
-//					System.out.println(temcout);
+					System.out.println(temcout);
 				}
 
 			}
