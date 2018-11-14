@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 import com.teachy.coins.utils.DateUtils;
 
-@Component
-@EnableAsync
+//@Component
+//@EnableAsync
 public class TzTask1 {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private static String yesterdayJS = "";

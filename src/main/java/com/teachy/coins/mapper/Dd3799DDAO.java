@@ -1,6 +1,7 @@
 package com.teachy.coins.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -15,5 +16,7 @@ public interface Dd3799DDAO {
 	List<Integer> getList(String type);
 
 	List<Integer> getListByDay(String type);
+
+	List<Integer> getListByDays(Map<String, Object> map);
 
 }

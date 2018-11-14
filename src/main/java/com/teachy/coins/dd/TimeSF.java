@@ -52,7 +52,4 @@ public class TimeSF {
 		return sdf.parse(time).getTime();
 	}
 
-	public static void main(String[] args) {
-		System.out.println(getRes(853391));
-	}
 }

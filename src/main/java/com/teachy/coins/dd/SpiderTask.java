@@ -12,11 +12,13 @@ import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.teachy.coins.mapper.Dd3799DDAO;
 import com.teachy.coins.utils.DateUtils;
 
 //@Component
@@ -31,9 +33,12 @@ public class SpiderTask {
 	int getCount = 0;
 	double test = 0.80;
 	int test1 = 0;
-    List<StringBuffer> stringBuffers = new ArrayList<>();
-    int bj =1;
-	@Scheduled(cron = "0/5 * * * * ?")
+	List<StringBuffer> stringBuffers = new ArrayList<>();
+	@Autowired
+	private Dd3799DDAO dd3799DDAO;
+	int max1 = 1;
+	int max2 = 1;
+	//	@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory() throws IOException {
 		Map<Integer, Integer> map = new HashMap<>();
 		Map<Integer, Integer> evemap = new HashMap<>();
@@ -46,10 +51,10 @@ public class SpiderTask {
 		for (int i = 0; i <= 27; i++) {
 			allres.add("");
 		}
-//		String time = "2018-10-26";
-//		for (int i = 0; i <= 17; i++) {
-				String time = "2018-11-11";
-				for (int i = 0; i <= 1; i++) {
+		//		String time = "2018-10-26";
+		//		for (int i = 0; i <= 17; i++) {
+		String time = "2018-11-11";
+		for (int i = 0; i <= 1; i++) {
 			evemap.clear();
 			evelist.clear();
 			HttpGet get = new HttpGet(
@@ -76,13 +81,74 @@ public class SpiderTask {
 				fx2(evelist);
 
 			}
-//			fx4(list);
+			//			fx4(list);
 		}
 		System.out.println("getCount:" + getCount + ":" + test1);
 		getCount = 0;
 	}
 
-	public void fx4(List<Integer> list){
+	//FK 8:0.93
+	//JS 13:0.91
+	//@Scheduled(cron = "0/5 * * * * ?")
+	public void getHistory1() {
+		System.out.println();
+		for (int k = 1; k <= 15; k++) {
+			for (double t = 0.83; t <= 1.1; t = t + 0.01) {
+				List<Integer> evelist = new ArrayList<>();
+				List<Integer> list = new ArrayList<>();
+				allres.clear();
+				lastres.clear();
+				test = t;
+				test1 = k;
+				for (int i = 0; i <= 27; i++) {
+					allres.add("");
+				}
+				Map<String, Object> map1 = new HashMap();
+				map1.put("type", "JS");
+				for (int i = 2; i >= 0; i--) {
+					map1.put("day", i);
+					evelist.clear();
+					list.clear();
+					evelist = dd3799DDAO.getListByDays(map1);
+					fx2(evelist);
+
+				}
+				System.out.println("getCount:" + getCount + "  k:" + k + "  t:" + t);
+				getCount = 0;
+			}
+		}
+	}
+
+	//FK 8:0.93
+	//JS 13:0.91
+	@Scheduled(cron = "0/5 * * * * ?")
+	public void getHistory2() {
+		System.out.println();
+		List<Integer> evelist = new ArrayList<>();
+		List<Integer> list = new ArrayList<>();
+		allres.clear();
+		lastres.clear();
+		test = 0.91;
+		test1 = 13;
+		for (int i = 0; i <= 27; i++) {
+			allres.add("");
+		}
+		Map<String, Object> map1 = new HashMap();
+		map1.put("type", "JS");
+		for (int i = 2; i >= 0; i--) {
+			map1.put("day", i);
+			evelist.clear();
+			list.clear();
+			evelist = dd3799DDAO.getListByDays(map1);
+			fx2(evelist);
+
+		}
+		System.out.println("getCount:" + getCount);
+		System.out.println(max2);
+		getCount = 0;
+	}
+
+	public void fx4(List<Integer> list) {
 
 	}
 
@@ -100,7 +166,7 @@ public class SpiderTask {
 				double temd = ((double)count[i] / lastres.size()) / jg[i > 13 ? 27 - i : i];
 				BigDecimal b = new BigDecimal(temd);
 				temd = b.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-				if (temd < 0.94) {
+				if (temd < test) {
 					if (i > 2 && i < 25) {
 						tz.add(i);
 						tem = tem + bet[i];
@@ -108,26 +174,31 @@ public class SpiderTask {
 				}
 			}
 			int bs = 1;
-			int temcout=0;
+			int temcout = 0;
 			for (int kj : list) {
 				use = use + tem * bs;
+				if(max1>max2){
+					max2=max1;
+				}
 				if (tz.contains(kj)) {
-					temcout= temcout-tem * bs+990 * bs;
+					max1=1;
+					temcout = temcout - tem * bs + 990 * bs;
 					get = get + 990 * bs;
+					System.out.println(temcout+":"+tem*bs+":"+(990 * bs-tem * bs)+":"+"WIN");
 					bs = 1;
-					System.out.println(temcout);
 				} else {
-					temcout= temcout-tem * bs;
+					max1++;
+					temcout = temcout - tem * bs;
+					System.out.println(temcout+":"+tem*bs+":"+tem * bs);
 					if (bs < test1) {
 						bs++;
 					}
-					System.out.println(temcout);
 				}
 
 			}
-//			System.out.print(tz);
+			//			System.out.print(tz);
 			int temcha = get - use;
-			System.out.print(temcha+" ");
+			System.out.print(temcha + " ");
 			getCount = getCount + temcha;
 			lastres.clear();
 			lastres.addAll(list);

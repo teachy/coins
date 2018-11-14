@@ -17,4 +17,9 @@
         where type=#{_parameter} and timeDay=date_sub(curdate(),interval 1 day)
     </select>
 
+
+    <select id="getListByDays" parameterType="map" resultType="int">
+        select jieguo from dd_3799d
+        where type=#{type} and timeDay=date_sub(curdate(),interval ${day} day)
+    </select>
 </mapper>

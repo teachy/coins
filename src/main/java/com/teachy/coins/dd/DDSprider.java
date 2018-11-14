@@ -137,6 +137,29 @@ public class DDSprider {
 		return tz;
 	}
 
+	public List<Integer> getListbyDB(String type, double f) throws IOException {
+		List<Integer> evelist;
+		List<Integer> tz = new ArrayList<>();
+		int[] count = new int[28];
+		if(type.equals("JS")){
+			evelist = dd3799DDAO.getListByDay("JS");
+		}else{
+			evelist = dd3799DDAO.getListByDay("FK");
+		}
+		evelist.stream().forEach(e -> count[e]++);
+		for (int i = 0; i <= 27; i++) {
+			double temd = ((double)count[i] / evelist.size()) / jg[i > 13 ? 27 - i : i];
+			BigDecimal b = new BigDecimal(temd);
+			temd = b.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
+			if (temd < f) {
+				if (i > 2 && i < 25) {
+					tz.add(i);
+				}
+			}
+		}
+		return tz;
+	}
+
 	private void insertDD(HttpGet get, String htmlPage, long temQH) {
 
 		List<String> res;
