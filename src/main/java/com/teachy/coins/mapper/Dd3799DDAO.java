@@ -19,4 +19,6 @@ public interface Dd3799DDAO {
 
 	List<Integer> getListByDays(Map<String, Object> map);
 
+	List<Integer> getAllListByType(String type);
+
 }

@@ -15,8 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.teachy.coins.utils.DateUtils;
-@Component
-@EnableAsync
+//@Component
+//@EnableAsync
 public class TzTask2 {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private static String yesterdayJS = "";
@@ -29,13 +29,13 @@ public class TzTask2 {
 	static HttpPost postJS = new HttpPost("http://www.game3799.com/Speed28/Bet");
 	private int bsJS = 1;
 	private int bsFK = 1;
-	//FK 8:0.93
-	//JS 13:0.91
+	//FK 11:0.87
+	//JS 11:0.85
 	private int beeting = 18888;
-	private double fkxs = 0.93;
-	private double jsxs = 0.91;
-	private int jsMax = 13;
-	private int fkMax = 8;
+	private double fkxs = 0.87;
+	private double jsxs = 0.85;
+	private int jsMax = 11;
+	private int fkMax = 11;
 	private long jsqh = 0;
 	private long fkqh = 0;
 	@Autowired
