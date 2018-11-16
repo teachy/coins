@@ -21,4 +21,6 @@ public interface Dd3799DDAO {
 
 	List<Integer> getAllListByType(String type);
 
+	List<Integer> getListByLimit(Map<String, Object> map);
+
 }

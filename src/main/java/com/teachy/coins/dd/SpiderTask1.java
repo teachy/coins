@@ -48,9 +48,9 @@ public class SpiderTask1 {
 	@Scheduled(cron = "0/1 * * * * ?")
 	public void getHistory1() {
 		allres = dd3799DDAO.getAllListByType("FK");
-		for (int beginNum = 100; beginNum <= 1300; beginNum = beginNum + 50) {
-			for (int k = 1; k <= 13; k++) {
-				for (double t = 0.8; t < 1; t = t + 0.01) {
+		for (int beginNum = 350; beginNum <= 350; beginNum = beginNum + 50) {
+			for (int k = 11; k <= 11; k++) {
+				for (double t = 0.82; t < 1; t = t + 0.01) {
 					List<Integer> begin = allres.stream().limit(beginNum).collect(toList());
 					List<Integer> after = allres.stream().skip(beginNum).collect(toList());
 					int bs = 1;
@@ -59,10 +59,16 @@ public class SpiderTask1 {
 					for (Integer integer : after) {
 						List<Integer> tz = getTZ(begin, t);
 						tem = tz.stream().mapToInt(e -> bet[e]).sum();
+						System.out.println(tz);
+						if(max1>max2){
+							max2=max1;
+						}
 						if (tz.contains(integer)) {
 							temcout = temcout - tem * bs + 990 * bs;
 							bs = 1;
+							max1=1;
 						} else {
+							max1++;
 							temcout = temcout - tem * bs;
 							if (bs < k) {
 								bs++;
@@ -71,6 +77,7 @@ public class SpiderTask1 {
 						begin.remove(0);
 						begin.add(integer);
 					}
+					System.out.println(max2);
 					if(temcout>80000)
 					System.out.println(temcout+":"+beginNum+":"+k+":"+t);
 				}

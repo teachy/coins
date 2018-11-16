@@ -17,31 +17,29 @@ import org.springframework.stereotype.Component;
 import com.teachy.coins.utils.DateUtils;
 
 /**
- * yesterday
+ * limit
  */
-//@Component
-//@EnableAsync
-public class TzTask2 {
+@Component
+@EnableAsync
+public class TzTask3limit {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-	private static String yesterdayJS = "";
-	private static String yesterdayFK = "";
 	private static List<Integer> jgListforJS = new ArrayList<>();
 	private static List<Integer> jgListforFK = new ArrayList<>();
+	private static List<Integer> jgListforJSLast = new ArrayList<>();
+	private static List<Integer> jgListforFKLast = new ArrayList<>();
 	static HttpGet kfget = new HttpGet("http://www.game3799.com/Crazy28/index");
 	static HttpGet jsget = new HttpGet("http://www.game3799.com/Speed28/index");
 	static HttpPost postFK = new HttpPost("http://www.game3799.com/Crazy28/Bet");
 	static HttpPost postJS = new HttpPost("http://www.game3799.com/Speed28/Bet");
 	private int bsJS = 1;
 	private int bsFK = 1;
-	//FK 11:0.87
-	//JS 11:0.85
+	//FK 11:0.82
+	//JS 11:0.82
 	private int beeting = 18888;
-	private double fkxs = 0.87;
-	private double jsxs = 0.92;
+	private double fkxs = 0.82;
+	private double jsxs = 0.82;
 	private int jsMax = 11;
 	private int fkMax = 11;
-	private long jsqh = 0;
-	private long fkqh = 0;
 	@Autowired
 	private DDSprider dDSprider;
 	@Autowired
@@ -52,7 +50,7 @@ public class TzTask2 {
 	public void tzForFK() {
 		try {
 			if (!DDTasks.getIdAndGold().contains("null")) {
-				fkff1();
+				fkff();
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -65,7 +63,7 @@ public class TzTask2 {
 	public void tzForJS() {
 		try {
 			if (!DDTasks.getIdAndGold().contains("null")) {
-				jsff1();
+				jsff();
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -83,29 +81,14 @@ public class TzTask2 {
 		}
 	}
 
-
-	private void jsff1() throws IOException, InterruptedException {
-		if (!yesterdayJS.equals(DateUtils.getYesterday()) || jgListforJS.size() < 2) {
-			yesterdayJS = DateUtils.getYesterday();
-			jgListforJS.clear();
-			jgListforJS = dDSprider.getListbyDB("JS", jsxs);
-			logger.info("tzForJS:" + yesterdayJS + ":" + jgListforJS);
-		}
-
+	private void jsff() throws IOException, InterruptedException {
 		DD dd = dDSprider.get28(jsget);
-		if (dd.getTemQH() != jsqh) {
-			jsqh = dd.getTemQH();
-			Runnable runnable = () -> {
-				sfTest.test(dd, "JS", jsxs, jsMax, jgListforJS);
-			};
-			Thread thread = new Thread(runnable);
-			thread.start();
-		}
 		if (Integer.parseInt(dd.getJcTime()) > 10) {
+			jgListforJS = dDSprider.getListbyDBLimit("JS", jsxs, 350);
 			if (jgListforJS.size() > 2) {
 				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
 				Thread.sleep(sleepTime * 1000);
-				if (jgListforJS.contains(dd.jieguo)) {
+				if (jgListforJSLast.contains(dd.jieguo)) {
 					bsJS = 1;
 				} else {
 					if (bsJS < jsMax) {
@@ -115,34 +98,22 @@ public class TzTask2 {
 				if (Times.getCheckTime()) {
 					dDSprider.tz28(dd, beeting * bsJS, postJS, jgListforJS);
 				}
+				jgListforJSLast.clear();
+				jgListforJSLast.addAll(jgListforJS);
 				int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
 				Thread.sleep(sleep1 * 1000);
 			}
 		}
 	}
 
-	private void fkff1() throws IOException, InterruptedException {
-		if (!yesterdayFK.equals(DateUtils.getYesterday()) || jgListforFK.size() < 2) {
-			yesterdayFK = DateUtils.getYesterday();
-			jgListforFK.clear();
-			jgListforFK = dDSprider.getListbyDB("FK", fkxs);
-			logger.info("tzForFK:" + yesterdayFK + ":" + jgListforFK);
-		}
-
+	private void fkff() throws IOException, InterruptedException {
 		DD dd = dDSprider.get28(kfget);
-		if (dd.getTemQH() != fkqh) {
-			fkqh = dd.getTemQH();
-			Runnable runnable = () -> {
-				sfTest.test(dd, "FK", fkxs, fkMax, jgListforFK);
-			};
-			Thread thread = new Thread(runnable);
-			thread.start();
-		}
 		if (Integer.parseInt(dd.getJcTime()) > 10) {
+			jgListforFK = dDSprider.getListbyDBLimit("FK", fkxs, 350);
 			if (jgListforFK.size() > 2) {
 				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
 				Thread.sleep(sleepTime * 1000);
-				if (jgListforFK.contains(dd.jieguo)) {
+				if (jgListforFKLast.contains(dd.jieguo)) {
 					bsFK = 1;
 				} else {
 					if (bsFK < fkMax) {
@@ -152,6 +123,8 @@ public class TzTask2 {
 				if (Times.getCheckTime()) {
 					dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
 				}
+				jgListforFKLast.clear();
+				jgListforFKLast.addAll(jgListforFK);
 				int sleep1 = (Integer.parseInt(dd.getKjTime()) - sleepTime);
 				Thread.sleep(sleep1 * 1000);
 			}

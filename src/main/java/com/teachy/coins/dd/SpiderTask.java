@@ -89,9 +89,9 @@ public class SpiderTask {
 		getCount = 0;
 	}
 
-	//FK 8:0.93-->//FK 11:0.87
-	//JS 13:0.91-->//JS 15:0.86-->11:0.85
-	@Scheduled(cron = "0/5 * * * * ?")
+	//FK 8:0.93-->//FK 11:0.87-->11:0.85(成本太高)--11:0.89
+	//JS 13:0.91-->//JS 15:0.86-->11:0.85(成本太高)--11:0.92
+	//@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory1() {
 		System.out.println();
 		for (int k = 1; k <= 13; k++) {
@@ -106,7 +106,7 @@ public class SpiderTask {
 					allres.add("");
 				}
 				Map<String, Object> map1 = new HashMap();
-				map1.put("type", "JS");
+				map1.put("type", "FK");
 				for (int i = maxday; i >= 0; i--) {
 					map1.put("day", i);
 					evelist.clear();
@@ -124,20 +124,20 @@ public class SpiderTask {
 
 	//FK 8:0.93
 	//JS 13:0.91
-	//@Scheduled(cron = "0/5 * * * * ?")
+	@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory2() {
 		System.out.println();
 		List<Integer> evelist = new ArrayList<>();
 		List<Integer> list = new ArrayList<>();
 		allres.clear();
 		lastres.clear();
-		test = 0.93;
-		test1 = 8;
+		test = 0.85;
+		test1 = 11;
 		for (int i = 0; i <= 27; i++) {
 			allres.add("");
 		}
 		Map<String, Object> map1 = new HashMap();
-		map1.put("type", "FK");
+		map1.put("type", "JS");
 		for (int i = maxday; i >= 0; i--) {
 			map1.put("day", i);
 			evelist.clear();
@@ -203,7 +203,7 @@ public class SpiderTask {
 			}
 			//			System.out.print(tz);
 			int temcha = get - use;
-//			System.out.print(temcha + " ");
+			System.out.print(temcha + " ");
 			getCount = getCount + temcha;
 			lastres.clear();
 			lastres.addAll(list);
