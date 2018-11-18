@@ -1,9 +1,5 @@
 package com.teachy.coins.dd;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.slf4j.Logger;
@@ -14,14 +10,16 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.teachy.coins.utils.DateUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * limit
  */
-//@Component
-//@EnableAsync
-public class TzTask3limit {
+@Component
+@EnableAsync
+public class TzTask4zuhe {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private static List<Integer> jgListforJS = new ArrayList<>();
 	private static List<Integer> jgListforFK = new ArrayList<>();
@@ -35,11 +33,13 @@ public class TzTask3limit {
 	private int bsFK = 1;
 	//FK 11:0.82
 	//JS 11:0.82
-	private int beeting = 18888;
-	private double fkxs = 0.82;
-	private double jsxs = 0.82;
-	private int jsMax = 11;
-	private int fkMax = 11;
+	private int beeting = 58888;
+	private double fkxs = 0.92;
+	private double jsxs = 0.96;
+	private int jsMax = 6;
+	private int jsMax_jiange = 5;
+	private int fkMax = 7;
+	private int fkMax_jiange = 6;
 	@Autowired
 	private DDSprider dDSprider;
 	@Autowired
@@ -84,7 +84,7 @@ public class TzTask3limit {
 	private void jsff() throws IOException, InterruptedException {
 		DD dd = dDSprider.get28(jsget);
 		if (Integer.parseInt(dd.getJcTime()) > 10) {
-			jgListforJS = dDSprider.getListbyDBLimit("JS", jsxs, 350);
+			jgListforJS = dDSprider.getListbyDBLimit("JS", jsxs, 450);
 			if (jgListforJS.size() > 2) {
 				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
 				Thread.sleep(sleepTime * 1000);
@@ -96,7 +96,9 @@ public class TzTask3limit {
 					}
 				}
 				if (Times.getCheckTime()) {
-					dDSprider.tz28(dd, beeting * bsJS, postJS, jgListforJS);
+					if(bsJS>=jsMax_jiange){
+						dDSprider.tz28(dd, beeting * bsJS, postJS, jgListforJS);
+					}
 				}
 				jgListforJSLast.clear();
 				jgListforJSLast.addAll(jgListforJS);
@@ -109,7 +111,7 @@ public class TzTask3limit {
 	private void fkff() throws IOException, InterruptedException {
 		DD dd = dDSprider.get28(kfget);
 		if (Integer.parseInt(dd.getJcTime()) > 10) {
-			jgListforFK = dDSprider.getListbyDBLimit("FK", fkxs, 350);
+			jgListforFK = dDSprider.getListbyDBLimit("FK", fkxs, 250);
 			if (jgListforFK.size() > 2) {
 				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
 				Thread.sleep(sleepTime * 1000);
@@ -121,7 +123,9 @@ public class TzTask3limit {
 					}
 				}
 				if (Times.getCheckTime()) {
-					dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
+					if(bsFK>=fkMax_jiange){
+						dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
+					}
 				}
 				jgListforFKLast.clear();
 				jgListforFKLast.addAll(jgListforFK);

@@ -38,7 +38,7 @@ public class SpiderTask {
 	private Dd3799DDAO dd3799DDAO;
 	int max1 = 1;
 	int max2 = 1;
-	int maxday = 3;//2018-11-11
+	int maxday = 7;//2018-11-11
 	//	@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory() throws IOException {
 		Map<Integer, Integer> map = new HashMap<>();
@@ -91,11 +91,11 @@ public class SpiderTask {
 
 	//FK 8:0.93-->//FK 11:0.87-->11:0.85(成本太高)--11:0.89
 	//JS 13:0.91-->//JS 15:0.86-->11:0.85(成本太高)--11:0.92
-	//@Scheduled(cron = "0/5 * * * * ?")
+	@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory1() {
 		System.out.println();
-		for (int k = 1; k <= 13; k++) {
-			for (double t = 0.80; t < 1; t = t + 0.01) {
+		for (int k = 10; k <= 13; k++) {
+			for (double t = 0.80; t < 0.96; t = t + 0.01) {
 				List<Integer> evelist = new ArrayList<>();
 				List<Integer> list = new ArrayList<>();
 				allres.clear();
@@ -106,7 +106,7 @@ public class SpiderTask {
 					allres.add("");
 				}
 				Map<String, Object> map1 = new HashMap();
-				map1.put("type", "FK");
+				map1.put("type", "JS");
 				for (int i = maxday; i >= 0; i--) {
 					map1.put("day", i);
 					evelist.clear();
@@ -115,7 +115,6 @@ public class SpiderTask {
 					fx2(evelist);
 
 				}
-				if(getCount>80000)
 				System.out.println("getCount:" + getCount + "  k:" + k + "  t:" + t);
 				getCount = 0;
 			}
@@ -124,7 +123,7 @@ public class SpiderTask {
 
 	//FK 8:0.93
 	//JS 13:0.91
-	@Scheduled(cron = "0/5 * * * * ?")
+	//@Scheduled(cron = "0/5 * * * * ?")
 	public void getHistory2() {
 		System.out.println();
 		List<Integer> evelist = new ArrayList<>();
