@@ -33,13 +33,13 @@ public class TzTask4zuhe {
 	private int bsFK = 1;
 	//FK 11:0.82
 	//JS 11:0.82
-	private int beeting = 58888;
-	private double fkxs = 0.92;
-	private double jsxs = 0.96;
-	private int jsMax = 6;
-	private int jsMax_jiange = 5;
+	private int beeting = 288888;
+	private double fkxs = 1.1;
+	private double jsxs = 1.1;
+	private int jsMax = 7;
+	private int jsMax_jiange = 4;
 	private int fkMax = 7;
-	private int fkMax_jiange = 6;
+	private int fkMax_jiange = 4;
 	@Autowired
 	private DDSprider dDSprider;
 	@Autowired
@@ -84,7 +84,7 @@ public class TzTask4zuhe {
 	private void jsff() throws IOException, InterruptedException {
 		DD dd = dDSprider.get28(jsget);
 		if (Integer.parseInt(dd.getJcTime()) > 10) {
-			jgListforJS = dDSprider.getListbyDBLimit("JS", jsxs, 450);
+			jgListforJS = dDSprider.getListbyDBLimit("JS", jsxs, 200);
 			if (jgListforJS.size() > 2) {
 				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
 				Thread.sleep(sleepTime * 1000);
@@ -97,7 +97,7 @@ public class TzTask4zuhe {
 				}
 				if (Times.getCheckTime()) {
 					if(bsJS>=jsMax_jiange){
-						dDSprider.tz28(dd, beeting * bsJS, postJS, jgListforJS);
+						dDSprider.tz28(dd, beeting * (bsJS-jsMax_jiange+1), postJS, jgListforJS);
 					}
 				}
 				jgListforJSLast.clear();
@@ -111,7 +111,7 @@ public class TzTask4zuhe {
 	private void fkff() throws IOException, InterruptedException {
 		DD dd = dDSprider.get28(kfget);
 		if (Integer.parseInt(dd.getJcTime()) > 10) {
-			jgListforFK = dDSprider.getListbyDBLimit("FK", fkxs, 250);
+			jgListforFK = dDSprider.getListbyDBLimit("FK", fkxs, 200);
 			if (jgListforFK.size() > 2) {
 				int sleepTime = (int)(Math.random() * Integer.parseInt(dd.getJcTime()));
 				Thread.sleep(sleepTime * 1000);
@@ -124,7 +124,7 @@ public class TzTask4zuhe {
 				}
 				if (Times.getCheckTime()) {
 					if(bsFK>=fkMax_jiange){
-						dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
+						dDSprider.tz28(dd, beeting * (bsFK-fkMax_jiange+1), postFK, jgListforFK);
 					}
 				}
 				jgListforFKLast.clear();

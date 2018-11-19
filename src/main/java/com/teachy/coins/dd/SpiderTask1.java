@@ -37,24 +37,29 @@ public class SpiderTask1 {
     @Scheduled(cron = "0/1 * * * * ?")
     public void getHistory1() {
         allres = dd3799DDAO.getAllListByType("FK");
-        for (int beginNum = 100; beginNum <= 450; beginNum = beginNum + 50) {
-            for (int k = 1; k <= 13; k++) {
-                for (double t = 0.85; t <= 0.98; t = t + 0.01) {
-                    for(int m=1;m<=10;m++){
+        for (int beginNum = 200; beginNum <= 500; beginNum = beginNum + 50) {
+            for (int k = 6; k <= 6; k++) {
+                for (double t = 1.1; t <= 1.1; t = t + 0.01) {
+                    for(int m=4;m<=6;m++){
                         List<Integer> begin = allres.stream().limit(beginNum).collect(toList());
                         List<Integer> after = allres.stream().skip(beginNum).collect(toList());
                         int bs = 1;
                         int temcout = 0;
                         int tem;
+                        int jishuqi=0;
+                        int jishuqicount=0;
                         for (Integer integer : after) {
+                            jishuqi++;
                             List<Integer> tz = getTZ(begin, t);
                             tem = tz.stream().mapToInt(e -> bet[e]).sum();
                             if (max1 > max2) {
                                 max2 = max1;
                             }
+//                            System.out.println(tz);
                             if (tz.contains(integer)) {
                                 if(bs>=m){
                                     temcout = temcout - tem * bs + 990 * bs;
+                                jishuqicount = jishuqicount - tem * bs + 990 * bs;
                                 }
                                 bs = 1;
                                 max1 = 1;
@@ -62,6 +67,7 @@ public class SpiderTask1 {
                                 max1++;
                                 if(bs>=m){
                                     temcout = temcout - tem * bs;
+                                jishuqicount = jishuqicount - tem * bs;
                                 }
                                 if (bs < k) {
                                     bs++;
@@ -69,9 +75,13 @@ public class SpiderTask1 {
                             }
                             begin.remove(0);
                             begin.add(integer);
+                            if(jishuqi>500){
+//                                System.out.println("jishuqicount" + ":" + jishuqicount);
+                                jishuqicount=0;
+                            }
                         }
-                    if(temcout>80000)
-                        System.out.println(temcout + ":" + beginNum + ":" + k + ":" + t+":m:"+m);
+//                    if(temcout>80000)
+                        System.out.println(temcout + ":" + beginNum + ":" + k + ":" + "max1:"+max2);
                     }
                 }
             }
