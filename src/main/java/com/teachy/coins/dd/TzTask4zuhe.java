@@ -33,7 +33,8 @@ public class TzTask4zuhe {
 	private int bsFK = 1;
 	//FK 11:0.82
 	//JS 11:0.82
-	private int beeting = 288888;
+	private int beeting = 788888;
+	private int beeting1 = 188888;
 	private double fkxs = 1.1;
 	private double jsxs = 1.1;
 	private int jsMax = 7;
@@ -98,6 +99,10 @@ public class TzTask4zuhe {
 				if (Times.getCheckTime()) {
 					if(bsJS>=jsMax_jiange){
 						dDSprider.tz28(dd, beeting * (bsJS-jsMax_jiange+1), postJS, jgListforJS);
+					}else{
+						if(bsJS>=2){
+							dDSprider.tz28(dd, beeting1 * bsJS, postJS, jgListforJS);
+						}
 					}
 				}
 				jgListforJSLast.clear();
@@ -125,6 +130,10 @@ public class TzTask4zuhe {
 				if (Times.getCheckTime()) {
 					if(bsFK>=fkMax_jiange){
 						dDSprider.tz28(dd, beeting * (bsFK-fkMax_jiange+1), postFK, jgListforFK);
+					}else{
+						if(bsFK>=2){
+							dDSprider.tz28(dd, beeting1 * bsFK, postFK, jgListforFK);
+						}
 					}
 				}
 				jgListforFKLast.clear();

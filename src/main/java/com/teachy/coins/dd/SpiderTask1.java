@@ -37,10 +37,10 @@ public class SpiderTask1 {
     @Scheduled(cron = "0/1 * * * * ?")
     public void getHistory1() {
         allres = dd3799DDAO.getAllListByType("FK");
-        for (int beginNum = 200; beginNum <= 500; beginNum = beginNum + 50) {
+        for (int beginNum = 200; beginNum <= 200; beginNum = beginNum + 50) {
             for (int k = 6; k <= 6; k++) {
                 for (double t = 1.1; t <= 1.1; t = t + 0.01) {
-                    for(int m=4;m<=6;m++){
+                    for(int m=1;m<=3;m++){
                         List<Integer> begin = allres.stream().limit(beginNum).collect(toList());
                         List<Integer> after = allres.stream().skip(beginNum).collect(toList());
                         int bs = 1;
