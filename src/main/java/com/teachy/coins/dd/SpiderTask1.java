@@ -28,7 +28,7 @@ public class SpiderTask1 {
     int max2 = 1;
     int maxday = 3;//2018-11-11
     int beginNum = 200;
-
+int mmm=0;
     //FK 350:11:0.82
     //JS 1050:11:0.86
 
@@ -37,10 +37,10 @@ public class SpiderTask1 {
     @Scheduled(cron = "0/1 * * * * ?")
     public void getHistory1() {
         allres = dd3799DDAO.getAllListByType("FK");
-        for (int beginNum = 200; beginNum <= 200; beginNum = beginNum + 50) {
-            for (int k = 6; k <= 6; k++) {
+        for (int beginNum = 100; beginNum <= 600; beginNum = beginNum + 50) {
+            for (int k = 1; k <= 10; k++) {
                 for (double t = 1.1; t <= 1.1; t = t + 0.01) {
-                    for(int m=1;m<=3;m++){
+                    for(int m=1;m<=k;m++){
                         List<Integer> begin = allres.stream().limit(beginNum).collect(toList());
                         List<Integer> after = allres.stream().skip(beginNum).collect(toList());
                         int bs = 1;
@@ -80,8 +80,11 @@ public class SpiderTask1 {
                                 jishuqicount=0;
                             }
                         }
-//                    if(temcout>80000)
-                        System.out.println(temcout + ":" + beginNum + ":" + k + ":" + "max1:"+max2);
+                    if(temcout>mmm){
+                        System.out.println(temcout + ":" + beginNum + ":" + k + ":" +"m:"+m+" max1:"+max2+" t:"+t);
+                        mmm=temcout;
+                    }
+
                     }
                 }
             }
