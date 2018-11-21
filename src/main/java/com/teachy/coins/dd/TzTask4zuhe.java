@@ -125,7 +125,7 @@ public class TzTask4zuhe {
                 }
                 if (Times.getCheckTime()) {
                     if (bsFK >= fkMax_jiange) {
-                        dDSprider.tz28(dd, beeting * bsJS, postFK, jgListforFK);
+                        dDSprider.tz28(dd, beeting * bsFK, postFK, jgListforFK);
                     }
                 }
                 jgListforFKLast.clear();
