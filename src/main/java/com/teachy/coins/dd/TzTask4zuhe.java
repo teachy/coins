@@ -31,9 +31,7 @@ public class TzTask4zuhe {
     static HttpPost postJS = new HttpPost("http://www.game3799.com/Speed28/Bet");
     private int bsJS = 1;
     private int bsFK = 1;
-    //FK 11:0.82
-    //JS 11:0.82
-    private int beeting = 288888;
+    private int beeting = 300000;
     private int beeting1 = 388888;
     private double fkxs = 1.1;
     private double jsxs = 1.1;
@@ -43,11 +41,9 @@ public class TzTask4zuhe {
     private int fkMax_jiange = 4;
     @Autowired
     private DDSprider dDSprider;
-    @Autowired
-    private SFTest sfTest;
 
     @Async
-    @Scheduled(cron = "1 0/1 * * * ?")
+    @Scheduled(cron = "58 0/1 * * * ?")
     public void tzForFK() {
         try {
             if (!DDTasks.getIdAndGold().contains("null")) {
