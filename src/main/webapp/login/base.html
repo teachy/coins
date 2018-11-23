@@ -23,8 +23,14 @@
 </script>
 
 <body>
-gold：<input id="id_gold" type='text' name='name' value=''> <br/>
-<button id="refresh"/>
+gold：<input id="id_gold" type='text' name='name' value=''><button id="refresh">refresh</button>
+<br/>
+<br/>
+<form action='/login/updateBeeting' method='post'>
+    beeting：<input type='text' name='name' value=''> <br/> 密码：
+    <input type='password' name='password' value=''> <br/>
+    <input type='submit' value='登录' /><br/>
+</form>
 </body>
 
 </html>
