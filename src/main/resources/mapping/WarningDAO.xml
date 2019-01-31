@@ -14,6 +14,10 @@
         <result column="time_str" jdbcType="VARCHAR" property="timeStr"/>
     </resultMap>
 
+    <sql id="BaseColumnList">
+        id,website,name,volume,price,count,isEmail,marks,timelong,time_str
+    </sql>
+
     <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.teachy.coins.model.Warning"
             useGeneratedKeys="true">
     insert into warning (website, `name`, volume, 
@@ -26,6 +30,12 @@
 
     <select id="selectWarning" parameterType="com.teachy.coins.model.Warning" resultMap="BaseResultMap">
          select id from warning where website=#{website,jdbcType=VARCHAR} and name = #{name,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getWarningList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="BaseColumnList"/>
+        FROM warning ORDER BY timelong DESC limit 5
     </select>
 
     <update id="updateById" parameterType="com.teachy.coins.model.Warning">
