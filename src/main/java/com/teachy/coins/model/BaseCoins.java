@@ -11,16 +11,18 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class BaseCoins {
-	private int id;
-	private String name;
-	private String website;
-	private int enable;
-	private String updateTime;
+    private int id;
+    private String name;
+    private String website;
+    private int enable;
+    private String updateTime;
+    private int emailTime;
 
-	public BaseCoins(String name, String website, int enable) {
-		this.name = name;
-		this.website = website;
-		this.enable = enable;
-		this.updateTime = DateUtils.convertTimeToString(System.currentTimeMillis());
-	}
+    public BaseCoins(String name, String website, int enable, int emailTime) {
+        this.name = name;
+        this.website = website;
+        this.enable = enable;
+        this.updateTime = DateUtils.convertTimeToString(System.currentTimeMillis());
+        this.emailTime = emailTime;
+    }
 }

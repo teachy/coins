@@ -6,9 +6,9 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
 -->
 <configuration scan="true" scanPeriod="60 seconds" debug="true">
     <!-- 定义日志的根目录 -->
-    <property name="LOG_HOME" value="d:"/>
+    <property name="LOG_HOME" value="/root/logs"/>
     <!-- 定义日志文件名称 -->
-    <property name="appName" value="coinsLogs"></property>
+    <property name="appName" value="log"></property>
     <!-- ch.qos.logback.core.ConsoleAppender 表示控制台输出 -->
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
         <!--
@@ -21,7 +21,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
             %n是换行符
         -->
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} --> [%thread] --> %-5level %logger{50} - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} --> [%thread] --> %-5level %logger{50} - %msg%n</pattern>
         </layout>
     </appender>
 
@@ -44,7 +44,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
             且maxHistory是365，则只保存最近365天的文件，删除之前的旧文件。注意，删除旧文件是，
             那些为了归档而创建的目录也会被删除。
             -->
-            <MaxHistory>365</MaxHistory>
+            <MaxHistory>10</MaxHistory>
             <!--
             当日志文件超过maxFileSize指定的大小是，根据上面提到的%i进行日志文件滚动 注意此处配置SizeBasedTriggeringPolicy是无法实现按文件大小进行滚动的，必须配置timeBasedFileNamingAndTriggeringPolicy
             -->
@@ -58,6 +58,19 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         </layout>
     </appender>
 
+    <appender name="springLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/springLog.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/springLog-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <MaxHistory>10</MaxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] - [ %-5level ] [ %logger{50} : %line ] - %msg%n</pattern>
+        </layout>
+    </appender>
     <!--
         logger主要用于存放日志对象，也可以定义日志类型、级别
         name：表示匹配的logger类型前缀，也就是包的前半部分
@@ -67,23 +80,20 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         表示当前logger的appender-ref和rootLogger的appender-ref都有效
     -->
     <!-- hibernate logger -->
-    <logger name="com.teachy.coins.mapper" level="debug" additivity="false">
-        <appender-ref ref="stdout"/>
+    <logger name="com.teachy.coins.mapper" level="info" additivity="true">
         <appender-ref ref="appLogAppender"/>
     </logger>
     <!-- Spring framework logger -->
-    <logger name="org.springframework" level="info" additivity="false">
-        <appender-ref ref="stdout"/>
-        <appender-ref ref="appLogAppender"/>
+    <logger name="org.springframework" level="info" additivity="true">
+        <appender-ref ref="springLog"/>
     </logger>
-
 
     <!--
     root与logger是父子关系，没有特别定义则默认为root，任何一个类只会和一个logger对应，
     要么是定义的logger，要么是root，判断的关键在于找到这个logger，然后判断这个logger的appender和level。
     -->
     <root level="info">
-        <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>
+        <appender-ref ref="stdout"/>
     </root>
 </configuration>
