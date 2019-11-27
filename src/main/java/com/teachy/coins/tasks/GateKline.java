@@ -56,6 +56,7 @@ public class GateKline {
     public void getKline1m() throws InterruptedException {
         if (first) {
             init();
+            sendEmail.sendEmail("校验是否能够发送邮件", "这是一个初始化校验");
             first = false;
         }
         CountDownLatch countDownLatch = new CountDownLatch(coinsList.size());
@@ -196,7 +197,7 @@ public class GateKline {
                 break;
             }
         }
-        if (newList.size() > 10) {
+        if (newList.size() > 20) {
             DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
             DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
             double avg = doubleSummaryStatistics.getAverage();
@@ -229,7 +230,7 @@ public class GateKline {
                 break;
             }
         }
-        if (newList.size() > 10 && not0List.size() > 2) {
+        if (newList.size() > 20 && not0List.size() > 5) {
             DoubleStream doubleStream = newList.stream().skip(1).mapToDouble(Double::doubleValue);
             DoubleSummaryStatistics doubleSummaryStatistics = doubleStream.summaryStatistics();
             double avg = doubleSummaryStatistics.getAverage();
