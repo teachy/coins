@@ -17,12 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -30,8 +25,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HuobiTest3 {
 
-    private static final String API_KEY = "123";
-    private static final String SECRET_KEY = "234";
+    private static final String API_KEY = "12345";
+    private static final String SECRET_KEY = "12345";
     private static final String URL_PREX = "https://api.btcgateway.pro/";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
@@ -79,35 +74,66 @@ public class HuobiTest3 {
         if (prices.size() != PRICES_SIZE) {
             return;
         }
-        int checkPriceRes = checkPrice();
-        if (checkPriceRes != 0) {
-            String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
-            jsonObject = JSON.parseObject(contractInfo);
-            String contractCode = jsonObject.getJSONArray("data").getJSONObject(0).getString("contract_code");
-            String contractindex = futureGetV1.futureContractIndex("BTC");
-            jsonObject = JSON.parseObject(contractindex);
-            String price = jsonObject.getJSONArray("data").getJSONObject(0).getString("index_price");
-            if (checkPriceRes == 1) {
-                hasCheckPrice = -1;
-                if (kdj == -1) {
-                    doss("buy", "close", contractCode, price);
-                }
+        if (hasCheckPrice != 0 && kdj == 0) {
+            if (hasCheckPrice == 1 && checkPrice1() == 1) {
+                String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
+                jsonObject = JSON.parseObject(contractInfo);
+                String contractCode = jsonObject.getJSONArray("data").getJSONObject(0).getString("contract_code");
+                String contractindex = futureGetV1.futureContractIndex("BTC");
+                jsonObject = JSON.parseObject(contractindex);
+                String price = jsonObject.getJSONArray("data").getJSONObject(0).getString("index_price");
+                doss("buy", "open", contractCode, price);
+                kdj = 1;
             }
-            if (checkPriceRes == -1) {
-                hasCheckPrice = 1;
-                if (kdj == 1) {
-                    doss("sell", "close", contractCode, price);
-                }
+            if (hasCheckPrice == -1 && checkPrice1() == -1) {
+                String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
+                jsonObject = JSON.parseObject(contractInfo);
+                String contractCode = jsonObject.getJSONArray("data").getJSONObject(0).getString("contract_code");
+                String contractindex = futureGetV1.futureContractIndex("BTC");
+                jsonObject = JSON.parseObject(contractindex);
+                String price = jsonObject.getJSONArray("data").getJSONObject(0).getString("index_price");
+                doss("sell", "open", contractCode, price);
+                kdj = -1;
             }
-            if (hasCheckPrice != 0 && kdj == 0) {
-                if (hasCheckPrice == 1 && checkPrice1() == 1) {
-                    doss("buy", "open", contractCode, price);
+        } else {
+            int checkPriceRes = checkPrice();
+            if (checkPriceRes != 0) {
+                if (kdj != 0) {
+                    String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
+                    jsonObject = JSON.parseObject(contractInfo);
+                    String contractCode = jsonObject.getJSONArray("data").getJSONObject(0).getString("contract_code");
+                    String contractindex = futureGetV1.futureContractIndex("BTC");
+                    jsonObject = JSON.parseObject(contractindex);
+                    String price = jsonObject.getJSONArray("data").getJSONObject(0).getString("index_price");
+                    if (checkPriceRes == 1) {
+                        hasCheckPrice = -1;
+                        if (kdj == -1) {
+                            doss("buy", "close", contractCode, price);
+                            kdj = 0;
+                        }
+                    }
+                    if (checkPriceRes == -1) {
+                        hasCheckPrice = 1;
+                        if (kdj == 1) {
+                            doss("sell", "close", contractCode, price);
+                            kdj = 0;
+                        }
+                    }
+                } else {
+                    if (checkPriceRes == 1) {
+                        hasCheckPrice = -1;
+                    }
+                    if (checkPriceRes == -1) {
+                        hasCheckPrice = 1;
+                    }
                 }
-                if (hasCheckPrice == -1 && checkPrice1() == -1) {
-                    doss("sell", "open", contractCode, price);
-                }
+
             }
         }
+        prices.remove(0);
+        List<Double> tempPrices = prices.stream().collect(Collectors.toList());
+        prices.clear();
+        prices.addAll(tempPrices);
     }
 
     private int checkPrice() {
@@ -117,18 +143,14 @@ public class HuobiTest3 {
         double max = stream.getMax();
         double min = stream.getMin();
         if (max - min > 9 && max - avg > 4 && avg - min > 4) {
-            log.info("止损：{}", prices);
             if (prices.get(0) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 2) > prices.get(PRICES_SIZE - 1)) {
                 temp = -1;
             }
             if (prices.get(PRICES_SIZE - 1) > prices.get(PRICES_SIZE - 2) && prices.get(PRICES_SIZE - 1) > prices.get(0)) {
                 temp = 1;
             }
+            log.info("止损：{}  temp:{}", prices, temp);
         }
-        prices.remove(0);
-        List<Double> tempPrices = prices.stream().collect(Collectors.toList());
-        prices.clear();
-        prices.addAll(tempPrices);
         return temp;
     }
 
@@ -329,9 +351,9 @@ public class HuobiTest3 {
             String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "480");
             JSONObject obj = JSON.parseObject(res);
             JSONArray arr = obj.getJSONArray("data");
-            double[] maxPrice = new double[arr.size()];
-            double[] minPrice = new double[arr.size()];
-            double[] closePrice = new double[arr.size()];
+            double[] maxPrice = new double[arr.size() + 1];
+            double[] minPrice = new double[arr.size() + 1];
+            double[] closePrice = new double[arr.size() + 1];
             ChartDataBean character = new ChartDataBean();
             List<Double> closelist = new ArrayList<>();
             for (int i = 0; i <= arr.size() - 1; i++) {
