@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Timely tracking and early warning
  */
-@Component
+//@Component
 public class GateKline {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final static String query_url = "https://data.gateio.co";
