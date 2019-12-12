@@ -27,10 +27,9 @@ public class HuobiTest3 {
 
     private static final String API_KEY = "12345";
     private static final String SECRET_KEY = "12345";
-    private static final String URL_PREX = "https://api.btcgateway.pro/";
+    private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
-    private CloseableHttpClient httpClient = HttpPoolUtil.getClient(HttpClientConstant.GATEK);
 
     Map<String, Double> kdjMap = new HashMap<>();
     Map<String, Double> macdMap = new HashMap<>();
@@ -41,7 +40,7 @@ public class HuobiTest3 {
     private static double k1 = 0;
     private static double macd1 = 0;
     private static int hasCheckPrice = 0;
-    List<String> checkList = Arrays.asList("15min", "1hour", "4hour");
+    List<String> checkList = Arrays.asList("15min", "4hour");
     private static int PRICES_SIZE = 6;
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
 
@@ -50,7 +49,7 @@ public class HuobiTest3 {
         try {
             task();
         } catch (Exception e) {
-            log.info("采集错误");
+            log.info("采集错误:{}",e.getMessage());
         }
     }
 
@@ -59,7 +58,7 @@ public class HuobiTest3 {
         try {
             task1();
         } catch (Exception e) {
-            log.info("采集错误");
+            log.info("采集错误:{}",e.getMessage());
         }
     }
 
