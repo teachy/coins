@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HuobiTest3 {
 
-    private static final String API_KEY = "12345";
-    private static final String SECRET_KEY = "12345";
+    private static final String API_KEY = "12345678";
+    private static final String SECRET_KEY = "12345679";
     private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
@@ -387,7 +387,7 @@ public class HuobiTest3 {
 
 
     private String doss(String buyOrSell, String openOrClose, String contractCode, String price) throws IOException, HttpException {
-        return futurePostV1.futureContractOrder("BTC", "quarter", contractCode, "", price, "4",
+        return futurePostV1.futureContractOrder("BTC", "quarter", contractCode, "", "", "7",
                 buyOrSell, openOrClose, "20", "opponent");
     }
 
