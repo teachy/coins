@@ -5,14 +5,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.teachy.coins.huobi.common.api.HbdmRestApiV1;
 import com.teachy.coins.huobi.common.api.IHbdmRestApi;
-import com.teachy.coins.macdandkdj.HttpClientConstant;
-import com.teachy.coins.macdandkdj.HttpPoolUtil;
 import com.teachy.coins.utils.ChartDataBean;
 import com.teachy.coins.utils.IndicatrixUtils;
 import com.teachy.coins.utils.KDJ;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpException;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +46,7 @@ public class HuobiTest3 {
         try {
             task();
         } catch (Exception e) {
-            log.info("采集错误:{}",e.getMessage());
+            log.info("采集错误:{}", e.getMessage());
         }
     }
 
@@ -58,7 +55,7 @@ public class HuobiTest3 {
         try {
             task1();
         } catch (Exception e) {
-            log.info("采集错误:{}",e.getMessage());
+            log.info("采集错误:{}", e.getMessage());
         }
     }
 
@@ -141,14 +138,30 @@ public class HuobiTest3 {
         double avg = stream.getAverage();
         double max = stream.getMax();
         double min = stream.getMin();
-        if (max - min > 9 && max - avg > 4 && avg - min > 4) {
-            if (prices.get(0) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 2) > prices.get(PRICES_SIZE - 1)) {
-                temp = -1;
+        boolean a = true;
+        if (prices.get(0) > prices.get(PRICES_SIZE - 1)) {
+            for (int i = 1; i < PRICES_SIZE; i++) {
+                if (prices.get(i - 1) < prices.get(i)) {
+                    a = false;
+                }
             }
-            if (prices.get(PRICES_SIZE - 1) > prices.get(PRICES_SIZE - 2) && prices.get(PRICES_SIZE - 1) > prices.get(0)) {
-                temp = 1;
+        } else {
+            for (int i = 1; i < PRICES_SIZE; i++) {
+                if (prices.get(i - 1) > prices.get(i)) {
+                    a = false;
+                }
             }
-            log.info("止损：{}  temp:{}", prices, temp);
+        }
+        if (a) {
+            if (max - min > 9 && max - avg > 4 && avg - min > 4) {
+                if (prices.get(0) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 2) > prices.get(PRICES_SIZE - 1)) {
+                    temp = -1;
+                }
+                if (prices.get(PRICES_SIZE - 1) > prices.get(PRICES_SIZE - 2) && prices.get(PRICES_SIZE - 1) > prices.get(0)) {
+                    temp = 1;
+                }
+                log.info("止损：{}  temp:{}", prices, temp);
+            }
         }
         return temp;
     }
@@ -261,7 +274,7 @@ public class HuobiTest3 {
         } else {
             boolean sell = false;
             if (kdj == 1) {
-                boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1);
+                boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
                 if (tem) {
                     if (macd < macd1 && Math.abs(macd - macd1) > 0.05) {
                         sell = true;
@@ -269,7 +282,7 @@ public class HuobiTest3 {
                 }
             }
             if (kdj == -1) {
-                boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1);
+                boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
                 if (tem) {
                     if (macd > macd1 && Math.abs(macd - macd1) > 0.05) {
                         sell = true;
