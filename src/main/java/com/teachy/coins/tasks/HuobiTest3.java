@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HuobiTest3 {
 
-    private static final String API_KEY = "afwo04df3f-77312681-82653dbc-a06d9";
-    private static final String SECRET_KEY = "14f6aaa0-06a62771-a9a38ad6-00608";
+    private static final String API_KEY = "12345678";
+    private static final String SECRET_KEY = "123456769";
     private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
