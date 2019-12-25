@@ -14,14 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 ;
 
@@ -44,7 +37,7 @@ public class HuobiTest4 {
     private static double d1 = 0;
     private static double k1 = 0;
     private static double macd1 = 0;
-    List<String> checkList = Arrays.asList("5min", "15min", "30min");
+    List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
     Set<Double> buyList = new HashSet<>();
 
     @Scheduled(cron = "*/3 * * * * ?")
@@ -102,10 +95,16 @@ public class HuobiTest4 {
 
         if (buyOrSell != -1) {
             if (d < k && d < j && d < 30) {
-                if (checkFiveMin() >= 1) {
+                if (checkFiveMin() == checkList.size()) {
+                    if (buyList.isEmpty() || checkList(last_price)) {
+                        log.info("open buy --size");
+                        open("buy", "10");
+                    }
+                } else if (checkFiveMin() >= 1) {
                     if (check1Min(last_price) == 1) {
                         if (buyList.isEmpty() || checkList(last_price)) {
-                            open("buy", "5");
+                            log.info("open buy");
+                            open("buy", "10");
                         }
                     }
                 }
@@ -113,10 +112,14 @@ public class HuobiTest4 {
         }
         if (buyOrSell != 1) {
             if (d > k && d > j && d > 70) {
-                if (checkFiveMin() <= -1) {
+                if (checkFiveMin() == checkList.size() * -1) {
+                    log.info("open sell --size");
+                    open("sell", "10");
+                } else if (checkFiveMin() <= -1) {
                     if (check1Min(last_price) == -1) {
                         if (buyList.isEmpty() || checkList(last_price)) {
-                            open("sell", "5");
+                            log.info("open sell");
+                            open("sell", "10");
                         }
                     }
                 }
@@ -126,16 +129,18 @@ public class HuobiTest4 {
         if (!volume.equals("0")) {
             if (buyOrSell == 1) {
                 boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
-                if (tem) {
-                    if (macd < macd1 && Math.abs(macd - macd1) > 0.05) {
+                if (tem && checkFive(1)) {
+                    if (macd < macd1 && Math.abs(macd - macd1) > 0.05 && last_price > cost_open) {
+                        log.info("close sell");
                         close("sell", volume);
                     }
                 }
             }
             if (buyOrSell == -1) {
                 boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
-                if (tem) {
-                    if (macd > macd1 && Math.abs(macd - macd1) > 0.05) {
+                if (tem && checkFive(-1)) {
+                    if (macd > macd1 && Math.abs(macd - macd1) > 0.05 && last_price < cost_open) {
+                        log.info("close buy");
                         close("buy", volume);
                     }
                 }
@@ -160,7 +165,7 @@ public class HuobiTest4 {
     private void close(String bos, String volume) throws IOException, HttpException {
         String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
         String contractCode = JSON.parseObject(contractInfo).getJSONArray("data").getJSONObject(0).getString("contract_code");
-        String contractOrder = doss(bos, "close", contractCode, volume);
+        String contractOrder = doss(bos, "close", contractCode, volume.substring(0, volume.indexOf(".")));
         String status = JSON.parseObject(contractOrder).getString("status");
         if ("ok".equalsIgnoreCase(status)) {
             buyList.clear();
@@ -169,7 +174,7 @@ public class HuobiTest4 {
 
     private boolean checkList(double lastPrice) {
         for (double d : buyList) {
-            if (Math.abs(lastPrice - d) < 50) {
+            if (Math.abs(lastPrice - d) < 30) {
                 return false;
             }
         }
@@ -187,14 +192,52 @@ public class HuobiTest4 {
         }
         DoubleSummaryStatistics stream = list.stream().mapToDouble(e -> e).summaryStatistics();
         double avg = stream.getAverage();
-        if (nowprice > avg + 8) {
+        if (nowprice > avg + 7) {
             return -1;
         }
-        if (nowprice < avg - 8) {
+        if (nowprice < avg - 7) {
             return 1;
         }
         return 0;
 
+    }
+
+    private boolean checkFive(int biaoshi) throws IOException, HttpException {
+        String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", "5min", "240");
+        JSONObject obj = JSON.parseObject(res);
+        JSONArray arr = obj.getJSONArray("data");
+        double[] maxPrice = new double[arr.size() + 1];
+        double[] minPrice = new double[arr.size() + 1];
+        double[] closePrice = new double[arr.size() + 1];
+        ChartDataBean character = new ChartDataBean();
+        List<Double> closelist = new ArrayList<>();
+        for (int i = 0; i <= arr.size() - 1; i++) {
+            JSONObject json = arr.getJSONObject(i);
+            maxPrice[i] = json.getDouble("high");
+            minPrice[i] = json.getDouble("low");
+            closePrice[i] = json.getDouble("close");
+            closelist.add(json.getDouble("close"));
+        }
+        character.setClose(closePrice);
+        character.setHigh(maxPrice);
+        character.setLow(minPrice);
+        Map<String, Double> kdj1 = KDJ.getKDJ(14, 1, 3, character);
+        double k = kdj1.get("K");
+        double d = kdj1.get("D");
+        double j = kdj1.get("J");
+        if (biaoshi == 1) {
+            if (d > k || d > j) {
+                return true;
+            }
+            return false;
+        }
+        if (biaoshi == -1) {
+            if (d < k || d < j) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
 
@@ -202,7 +245,7 @@ public class HuobiTest4 {
         int tem = 0;
         int tem1 = 0;
         for (String period : checkList) {
-            String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "480");
+            String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "240");
             JSONObject obj = JSON.parseObject(res);
             JSONArray arr = obj.getJSONArray("data");
             double[] maxPrice = new double[arr.size() + 1];

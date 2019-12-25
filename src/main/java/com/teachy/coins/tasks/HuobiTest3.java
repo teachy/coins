@@ -143,7 +143,7 @@ public class HuobiTest3 {
             log.info("止损：{}  temp:{}", prices, temp);
         }
         return temp;
-    }gio
+    }
 
     private int checkPrice1() {
         int temp = 0;
