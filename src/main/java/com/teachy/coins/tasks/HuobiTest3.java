@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-//@Component
+@Component
 @Slf4j
 public class HuobiTest3 {
 
