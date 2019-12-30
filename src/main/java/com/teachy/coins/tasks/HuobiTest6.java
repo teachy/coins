@@ -26,7 +26,7 @@ import java.util.Set;
 ;
 
 
-@Component
+//@Component
 @Slf4j
 public class HuobiTest6 {
 
@@ -89,8 +89,9 @@ public class HuobiTest6 {
         }
         if (volume.equals("0")) {
             buyList.clear();
+            begin = System.currentTimeMillis();
             buyOrSell = 0;
-            if (d < k && d < j && d < 30) {
+            if (d < k && d < j && d < 40) {
                 if (checkFiveMin() >= checkList.size() - 1) {
                     log.info("open buy --size");
                     open("buy", buySize + "");
@@ -101,7 +102,7 @@ public class HuobiTest6 {
                     }
                 }
             }
-            if (d > k && d > j && d > 70) {
+            if (d > k && d > j && d > 60) {
                 if (checkFiveMin() <= (checkList.size() - 1) * -1) {
                     log.info("open sell --size");
                     open("sell", buySize + "");
@@ -127,10 +128,10 @@ public class HuobiTest6 {
             if (begin < 1) {
                 begin = System.currentTimeMillis();
             }
-            if (volume.substring(0, volume.indexOf(".")).equals(buySize + "") && System.currentTimeMillis() - begin < 30 * 60 * 1000) {
+            if (volume.substring(0, volume.indexOf(".")).equals(buySize + "") && System.currentTimeMillis() - begin < 4 * 30 * 60 * 1000) {
                 if (buyOrSell == 1) {
                     boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
-                    if (tem) {
+                    if (tem && checkFive(1)) {
                         if (macd < macd1 && Math.abs(macd - macd1) > 0.05 && last_price - cost_open > 12) {
                             log.info("close sell");
                             close("sell", volume);
@@ -139,8 +140,8 @@ public class HuobiTest6 {
                 }
                 if (buyOrSell == -1) {
                     boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
-                    if (tem) {
-                        if (macd > macd1 && Math.abs(macd - macd1) > 0.05 && cost_open - last_price > 12) {
+                    if (tem && checkFive(-1)) {
+                        if (macd > macd1 && Math.abs(macd - macd1) > 0.05 && cost_open - last_price > 8) {
                             log.info("close buy");
                             close("buy", volume);
                         }
@@ -171,7 +172,6 @@ public class HuobiTest6 {
         String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
         String contractCode = JSON.parseObject(contractInfo).getJSONArray("data").getJSONObject(0).getString("contract_code");
         String contractOrder = doss(bos, "open", contractCode, volume);
-        begin = System.currentTimeMillis();
 //        String status = JSON.parseObject(contractOrder).getString("status");
 //        if ("ok".equalsIgnoreCase(status)) {
 //            buyList.add(last_price);
@@ -242,13 +242,13 @@ public class HuobiTest6 {
         double d = kdj1.get("D");
         double j = kdj1.get("J");
         if (biaoshi == 1) {
-            if (d > k || d > j) {
+            if (d > k || Math.abs(d - k) < 3 || Math.abs(d - j) < 3 || d > j) {
                 return true;
             }
             return false;
         }
         if (biaoshi == -1) {
-            if (d < k || d < j) {
+            if (d < k || Math.abs(d - k) < 3 || Math.abs(d - j) < 3 || d < j) {
                 return true;
             }
             return false;

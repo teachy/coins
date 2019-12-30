@@ -14,31 +14,43 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.DoubleSummaryStatistics;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 ;
 
 
-//@Component
+@Component
 @Slf4j
-public class HuobiTest4 {
+public class HuobiTest7 {
 
     private static final String API_KEY = "12345678";
     private static final String SECRET_KEY = "123456789";
     private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
-
     Map<String, Double> kdjMap = new HashMap<>();
     Map<String, Double> macdMap = new HashMap<>();
     private static int buyOrSell = 0;
-
     private static double j1 = 0;
     private static double d1 = 0;
     private static double k1 = 0;
     private static double macd1 = 0;
-    List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
+    private static int buySize = 10;
+    private static long begin = 0L;
+    List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min", "4hour");
     Set<Double> buyList = new HashSet<>();
+    private static boolean isSell = false;
+    private static int PRICES_SIZE = 6;
+    private static String volume = "0";
+    List<Double> prices = new ArrayList<>(PRICES_SIZE);
 
     @Scheduled(cron = "*/3 * * * * ?")
     public void doTask() {
@@ -49,6 +61,54 @@ public class HuobiTest4 {
         }
     }
 
+    @Scheduled(cron = "*/1 * * * * ?")
+    public void doTask1() {
+        try {
+            task1();
+        } catch (Exception e) {
+            log.info("采集错误:{}", e.getMessage());
+        }
+    }
+
+    private void task1() throws IOException, HttpException {
+        String positionInfo1 = futurePostV1.futureMarketHistoryTrade("BTC_CQ", "1");
+        double last_price = JSON.parseObject(positionInfo1).getJSONArray("data").getJSONObject(0).getJSONArray("data").getJSONObject(0).getDouble("price");
+        if (prices.size() < PRICES_SIZE) {
+            prices.add(last_price);
+        }
+        if (prices.size() != PRICES_SIZE) {
+            return;
+        }
+        if (isSell) {
+            int checkPriceRes = checkPrice();
+            log.info("开始追踪卖点 checkPriceRes:{}  buyOrSell:{} last_price:{}", checkPriceRes, buyOrSell, last_price);
+            if (checkPriceRes != 0 && buyOrSell != 0 && buyOrSell != checkPriceRes) {
+                if (buyOrSell == 1) {
+                    close("sell", volume);
+                }
+                if (buyOrSell == -1) {
+                    close("buy", volume);
+                }
+            }
+        }
+        prices.remove(0);
+        List<Double> tempPrices = prices.stream().collect(Collectors.toList());
+        prices.clear();
+        prices.addAll(tempPrices);
+    }
+
+    private int checkPrice() {
+        int temp = 0;
+        DoubleSummaryStatistics stream = prices.stream().mapToDouble(e -> e).summaryStatistics();
+        double avg = stream.getAverage();
+        if (prices.get(0) > prices.get(1) && prices.get(0) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 2) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 1) < avg) {
+            temp = -1;
+        }
+        if (prices.get(PRICES_SIZE - 1) > prices.get(PRICES_SIZE - 2) && prices.get(PRICES_SIZE - 1) > prices.get(0) && prices.get(1) > prices.get(0) && prices.get(PRICES_SIZE - 1) > avg) {
+            temp = 1;
+        }
+        return temp;
+    }
 
     private void task() throws Exception {
         checkHuoBi();
@@ -63,85 +123,112 @@ public class HuobiTest4 {
             return;
         }
         JSONObject jsonObject;
-        String volume = "0";
         double cost_open = 0;
         double last_price = 0;
         String positionInfo1 = futurePostV1.futureMarketHistoryTrade("BTC_CQ", "1");
         jsonObject = JSON.parseObject(positionInfo1);
         last_price = jsonObject.getJSONArray("data").getJSONObject(0).getJSONArray("data").getJSONObject(0).getDouble("price");
-
-//        String allMoney = futurePostV1.futureContractAccountInfo("BTC");
-//        double margin_static = JSON.parseObject(allMoney).getJSONArray("data").getJSONObject(0).getDouble("margin_static");
-
         String positionInfo = futurePostV1.futureContractPositionInfo("BTC");
         jsonObject = JSON.parseObject(positionInfo);
         if (jsonObject.getJSONArray("data").size() > 0) {
             cost_open = jsonObject.getJSONArray("data").getJSONObject(0).getDouble("cost_open");
             last_price = jsonObject.getJSONArray("data").getJSONObject(0).getDouble("last_price");
             String direction = jsonObject.getJSONArray("data").getJSONObject(0).getString("direction");
-            String type = direction.equalsIgnoreCase("buy") ? "做多" : "做空";
             volume = jsonObject.getJSONArray("data").getJSONObject(0).getString("volume");
             buyOrSell = direction.equalsIgnoreCase("buy") ? 1 : -1;
             buyList.add(cost_open);
-            if (Math.abs(cost_open - last_price) < 12) {
-                return;
-            }
-//            log.info("BTC季度合约-->{}-->开仓价格：{}-->数量：{}-->当前btc数量：{}-->当前价格：{}", type, cost_open, volume, margin_static, last_price);
-        }
-        if (volume.equals("0")) {
+        } else {
+            volume = "0";
             buyList.clear();
+            begin = System.currentTimeMillis();
             buyOrSell = 0;
+            isSell = false;
         }
-
-        if (buyOrSell != -1) {
-            if (d < k && d < j && d < 30) {
-                if (checkFiveMin() == checkList.size()) {
-                    if (buyList.isEmpty() || checkList(last_price)) {
+        if (k < 40 && j < 40 && d < 30) {
+            if (checkFiveMin() >= checkList.size() - 1) {
+                if (buyList.isEmpty()) {
+                    log.info("open buy --size");
+                    open("buy", buySize + "");
+                } else if (cost_open - last_price > 50 && checkList(last_price)) {
+                    log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                    open("buy", buySize + "");
+                }
+            } else if (checkFiveMin() >= checkList.size() - 2) {
+                if (check1Min(last_price) == 1) {
+                    if (buyList.isEmpty()) {
                         log.info("open buy --size");
-                        open("buy", "10");
-                    }
-                } else if (checkFiveMin() >= 1) {
-                    if (check1Min(last_price) == 1) {
-                        if (buyList.isEmpty() || checkList(last_price)) {
-                            log.info("open buy");
-                            open("buy", "10");
-                        }
+                        open("buy", buySize + "");
+                    } else if (cost_open - last_price > 50 && checkList(last_price)) {
+                        log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                        open("buy", buySize + "");
                     }
                 }
             }
         }
-        if (buyOrSell != 1) {
-            if (d > k && d > j && d > 70) {
-                if (checkFiveMin() == checkList.size() * -1) {
+        if (k > 60 && j > 60 && d > 70) {
+            if (checkFiveMin() <= (checkList.size() - 1) * -1) {
+                if (buyList.isEmpty()) {
                     log.info("open sell --size");
-                    open("sell", "10");
-                } else if (checkFiveMin() <= -1) {
-                    if (check1Min(last_price) == -1) {
-                        if (buyList.isEmpty() || checkList(last_price)) {
-                            log.info("open sell");
-                            open("sell", "10");
-                        }
+                    open("sell", buySize + "");
+                } else if (last_price - cost_open > 50 && checkList(last_price)) {
+                    log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                    open("sell", buySize + "");
+                }
+            } else if (checkFiveMin() <= (checkList.size() - 2) * -1) {
+                if (check1Min(last_price) == -1) {
+                    if (buyList.isEmpty()) {
+                        log.info("open sell --size");
+                        open("sell", buySize + "");
+                    } else if (last_price - cost_open > 50 && checkList(last_price)) {
+                        log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                        open("sell", buySize + "");
                     }
                 }
             }
         }
-
         if (!volume.equals("0")) {
             if (buyOrSell == 1) {
-                boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
-                if (tem && checkFive(1)) {
-                    if (macd < macd1 && Math.abs(macd - macd1) > 0.05 && last_price > cost_open) {
-                        log.info("close sell");
-                        close("sell", volume);
-                    }
+                if (cost_open - last_price > 100 && checkList(last_price)) {
+                    log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                    open("buy", buySize + "");
                 }
             }
             if (buyOrSell == -1) {
-                boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
-                if (tem && checkFive(-1)) {
-                    if (macd > macd1 && Math.abs(macd - macd1) > 0.05 && last_price < cost_open) {
-                        log.info("close buy");
-                        close("buy", volume);
+                if (last_price - cost_open > 100 && checkList(last_price)) {
+                    log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                    open("sell", buySize + "");
+                }
+            }
+            if (begin < 1) {
+                begin = System.currentTimeMillis();
+            }
+            if (volume.substring(0, volume.indexOf(".")).equals(buySize + "") && System.currentTimeMillis() - begin < 180 * 60 * 1000) {
+                if (buyOrSell == 1) {
+                    boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
+                    if (tem && checkFive(1)) {
+                        if (macd < macd1 && Math.abs(macd - macd1) > 0.05 && last_price - cost_open > 10) {
+                            isSell = true;
+                        }
+                    }
+                }
+                if (buyOrSell == -1) {
+                    boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
+                    if (tem && checkFive(-1)) {
+                        if (macd > macd1 && Math.abs(macd - macd1) > 0.05 && cost_open - last_price > 10) {
+                            isSell = true;
+
+                        }
+                    }
+                }
+            } else {
+                if (buyOrSell == 1) {
+                    if (last_price > cost_open) {
+                        isSell = true;
+                    }
+                }
+                if (buyOrSell == -1) {
+                    if (last_price < cost_open) {
+                        isSell = true;
                     }
                 }
             }
@@ -149,17 +236,19 @@ public class HuobiTest4 {
         j1 = j;
         d1 = d;
         k1 = k;
-        macd1 = macd;
+        if (macd1 != macd) {
+            macd1 = macd;
+        }
     }
 
     private void open(String bos, String volume) throws IOException, HttpException {
         String contractInfo = futureGetV1.futureContractInfo("BTC", "quarter", "");
         String contractCode = JSON.parseObject(contractInfo).getJSONArray("data").getJSONObject(0).getString("contract_code");
         String contractOrder = doss(bos, "open", contractCode, volume);
-        String status = JSON.parseObject(contractOrder).getString("status");
-        if ("ok".equalsIgnoreCase(status)) {
+//        String status = JSON.parseObject(contractOrder).getString("status");
+//        if ("ok".equalsIgnoreCase(status)) {
 //            buyList.add(last_price);
-        }
+//        }
     }
 
     private void close(String bos, String volume) throws IOException, HttpException {
@@ -226,13 +315,13 @@ public class HuobiTest4 {
         double d = kdj1.get("D");
         double j = kdj1.get("J");
         if (biaoshi == 1) {
-            if (d > k || d > j) {
+            if (d > k || Math.abs(d - k) < 8 || Math.abs(d - j) < 8 || d > j) {
                 return true;
             }
             return false;
         }
         if (biaoshi == -1) {
-            if (d < k || d < j) {
+            if (d < k || Math.abs(d - k) < 8 || Math.abs(d - j) < 8 || d < j) {
                 return true;
             }
             return false;
@@ -245,7 +334,7 @@ public class HuobiTest4 {
         int tem = 0;
         int tem1 = 0;
         for (String period : checkList) {
-            String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "240");
+            String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "480");
             JSONObject obj = JSON.parseObject(res);
             JSONArray arr = obj.getJSONArray("data");
             double[] maxPrice = new double[arr.size() + 1];
@@ -267,10 +356,10 @@ public class HuobiTest4 {
             double k = kdj1.get("K");
             double d = kdj1.get("D");
             double j = kdj1.get("J");
-            if (d < k && d < j) {
+            if (k < 50 && j < 50 && d < 40) {
                 tem++;
             }
-            if (d > k && d > j) {
+            if (k > 50 && j > 50 && d > 60) {
                 tem1--;
             }
         }
@@ -294,9 +383,9 @@ public class HuobiTest4 {
         kdjMap.clear();
         macdMap.clear();
         JSONArray arr = getData();
-        double[] maxPrice = new double[arr.size()];
-        double[] minPrice = new double[arr.size()];
-        double[] closePrice = new double[arr.size()];
+        double[] maxPrice = new double[arr.size() + 1];
+        double[] minPrice = new double[arr.size() + 1];
+        double[] closePrice = new double[arr.size() + 1];
         List<Double> closelist = new ArrayList<>();
         ChartDataBean character = new ChartDataBean();
         for (int i = 0; i <= arr.size() - 1; i++) {

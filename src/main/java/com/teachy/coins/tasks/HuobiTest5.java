@@ -26,7 +26,7 @@ import java.util.Set;
 ;
 
 
-@Component
+//@Component
 @Slf4j
 public class HuobiTest5 {
 
