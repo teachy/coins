@@ -14,21 +14,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
 
 
 //@Component
 @Slf4j
-public class HuobiTest7 {
+public class HuobiTest8 {
 
     private static final String API_KEY = "12345678";
     private static final String SECRET_KEY = "123456789";
@@ -42,7 +34,7 @@ public class HuobiTest7 {
     private static double d1 = 0;
     private static double k1 = 0;
     private static double macd1 = 0;
-    private static int buySize = 15;
+    private static int buySize = 13;
     private static long begin = 0L;
     List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
     Set<Double> buyList = new HashSet<>();
@@ -53,7 +45,7 @@ public class HuobiTest7 {
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
     List<Double> prices1 = new ArrayList<>(PRICES_SIZE);
 
-    @Scheduled(cron = "*/2 * * * * ?")
+    @Scheduled(cron = "*/3 * * * * ?")
     public void doTask() {
         try {
             task();
@@ -118,6 +110,7 @@ public class HuobiTest7 {
     }
 
     private void task() throws Exception {
+        futurePostV1.futureContractCancelall("BTC");
         checkHuoBi();
         if (kdjMap.isEmpty() || macdMap.isEmpty()) {
             return;
@@ -150,7 +143,7 @@ public class HuobiTest7 {
             MAX_WIN = PRICES_SIZE;
         }
         if (buyOrSell != -1) {
-            if ((k < 40 && j < 40 && d < 30) && (d < k || d < j)) {
+            if (k < 40 && j < 40 && d < 30 && d - k < 30 && d - j < 30) {
                 if (checkFiveMin() >= checkList.size() - 1) {
                     if (buyList.isEmpty()) {
                         log.info("open buy --size");
@@ -173,7 +166,7 @@ public class HuobiTest7 {
             }
         }
         if (buyOrSell != 1) {
-            if ((k > 60 && j > 60 && d > 70) && (d > k || d > j)) {
+            if (k > 60 && j > 60 && d > 70 && j - d < 30 && k - d < 30) {
                 if (checkFiveMin() <= (checkList.size() - 1) * -1) {
                     if (buyList.isEmpty()) {
                         log.info("open sell --size");
@@ -198,7 +191,7 @@ public class HuobiTest7 {
         if (!volume.equals("0")) {
             if (buyOrSell == 1) {
                 if (MAX_WIN == PRICES_SIZE) {
-                    if (cost_open - last_price > 25) {
+                    if (cost_open - last_price > 35) {
                         MAX_WIN = PRICES_SIZE - 5;
                         log.info("修改盈利价格：{}", MAX_WIN);
                     }
@@ -210,7 +203,7 @@ public class HuobiTest7 {
             }
             if (buyOrSell == -1) {
                 if (MAX_WIN == PRICES_SIZE) {
-                    if (last_price - cost_open > 25) {
+                    if (last_price - cost_open > 35) {
                         MAX_WIN = PRICES_SIZE - 5;
                         log.info("修改盈利价格：{}", MAX_WIN);
                     }
@@ -223,32 +216,28 @@ public class HuobiTest7 {
             if (begin < 1) {
                 begin = System.currentTimeMillis();
             }
-            if (volume.substring(0, volume.indexOf(".")).equals(buySize + "") && System.currentTimeMillis() - begin < 180 * 60 * 1000 && MAX_WIN == PRICES_SIZE) {
+            boolean isMore = Integer.valueOf(volume.substring(0, volume.indexOf("."))) <= buySize;
+            if (isMore && System.currentTimeMillis() - begin < 180 * 60 * 1000 && MAX_WIN == PRICES_SIZE) {
                 if (buyOrSell == 1) {
-                    boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
-                    if (tem && checkFive(1)) {
-                        if (macd < macd1 && Math.abs(macd - macd1) > 0.05 && last_price - cost_open > MAX_WIN) {
-                            isSell = true;
-                        }
-                    }
-                }
-                if (buyOrSell == -1) {
-                    boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
-                    if (tem && checkFive(-1)) {
-                        if (macd > macd1 && Math.abs(macd - macd1) > 0.05 && cost_open - last_price >= MAX_WIN) {
-                            isSell = true;
-
-                        }
-                    }
-                }
-            } else {
-                if (buyOrSell == 1) {
-                    if (last_price > cost_open) {
+                    if (last_price - cost_open >= MAX_WIN && (d > j || d > k)) {
                         isSell = true;
                     }
                 }
                 if (buyOrSell == -1) {
-                    if (cost_open > last_price) {
+                    if (cost_open - last_price >= MAX_WIN && (d < j || d < k)) {
+                        isSell = true;
+                    }
+                }
+            } else {
+                if (buyOrSell == 1) {
+                    boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
+                    if (last_price > cost_open && tem) {
+                        isSell = true;
+                    }
+                }
+                if (buyOrSell == -1) {
+                    boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
+                    if (cost_open > last_price && tem) {
                         isSell = true;
                     }
                 }
@@ -388,10 +377,10 @@ public class HuobiTest7 {
             double k = kdj1.get("K");
             double d = kdj1.get("D");
             double j = kdj1.get("J");
-            if ((k < 50 && j < 50 && d < 40) && (d < k || d < j)) {
+            if (k < 50 && j < 50 && d < 50 && d - k < 30 && d - j < 30) {
                 tem++;
             }
-            if ((k > 50 && j > 50 && d > 60) && (d > k || d > j)) {
+            if (k > 50 && j > 50 && d > 50 && j - d < 30 && k - d < 30) {
                 tem1--;
             }
         }
