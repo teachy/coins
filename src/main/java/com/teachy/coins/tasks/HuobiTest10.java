@@ -41,7 +41,7 @@ public class HuobiTest10 {
     private static double d1 = 0;
     private static double k1 = 0;
     private static double macd1 = 0;
-    private static int buySize = 4;
+    private static int buySize = 5;
     private static long begin = 0L;
     List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
     Set<Double> buyList = new HashSet<>();
@@ -149,7 +149,8 @@ public class HuobiTest10 {
             isSell = false;
             MAX_WIN = PRICES_SIZE;
         }
-        if (d < k && d < j && d < 40) {
+//        System.out.println("k:"+k+"d:"+d+"j:"+j+"macd:"+macd+"macd1:"+macd1);
+        if (d < k && d < j && d < 40 && macd > macd1 && j - d > 15) {
             if (checkFiveMin() >= checkList.size() - 1) {
                 if (buyOrSell != -1) {
                     if (buyList.isEmpty()) {
@@ -160,6 +161,7 @@ public class HuobiTest10 {
                         open("buy", buySize + "");
                     }
                 } else {
+                    log.info("可能1");
                     isSell = true;
                 }
             } else if (checkFiveMin() >= checkList.size() - 2) {
@@ -173,13 +175,14 @@ public class HuobiTest10 {
                             open("buy", buySize + "");
                         }
                     } else {
+                        log.info("可能2");
                         isSell = true;
                     }
                 }
             }
         }
 
-        if (d > k && d > j && d > 60) {
+        if (d > k && d > j && d > 60 && macd < macd1 && d - j > 15) {
             if (checkFiveMin() <= (checkList.size() - 1) * -1) {
                 if (buyOrSell != 1) {
                     if (buyList.isEmpty()) {
@@ -190,6 +193,7 @@ public class HuobiTest10 {
                         open("sell", buySize + "");
                     }
                 } else {
+                    log.info("可能3");
                     isSell = true;
                 }
             } else if (checkFiveMin() <= (checkList.size() - 2) * -1) {
@@ -202,9 +206,10 @@ public class HuobiTest10 {
                             log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
                             open("sell", buySize + "");
                         }
+                    } else {
+                        log.info("可能4");
+                        isSell = true;
                     }
-                } else {
-                    isSell = true;
                 }
             }
         }
@@ -240,25 +245,29 @@ public class HuobiTest10 {
             boolean isMore = Integer.valueOf(volume.substring(0, volume.indexOf("."))) <= buySize;
             if (isMore && System.currentTimeMillis() - begin < 180 * 60 * 1000 && MAX_WIN == PRICES_SIZE) {
                 if (buyOrSell == 1) {
-                    if (last_price - cost_open >= MAX_WIN && (d > j || d > k)) {
+                    if (last_price - cost_open >= MAX_WIN && (d > j || d > k || Math.abs(d - j) < 10)) {
+                        log.info("可能5");
                         isSell = true;
                     }
                 }
                 if (buyOrSell == -1) {
-                    if (cost_open - last_price >= MAX_WIN && (d < j || d < k)) {
+                    if (cost_open - last_price >= MAX_WIN && (d < j || d < k || Math.abs(d - j) < 10)) {
+                        log.info("可能6");
                         isSell = true;
                     }
                 }
             } else {
                 if (buyOrSell == 1) {
-                    boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) && (d > j || d > k);
+                    boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) || (d > j || d > k);
                     if (last_price > cost_open && tem) {
+                        log.info("可能7");
                         isSell = true;
                     }
                 }
                 if (buyOrSell == -1) {
-                    boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) && (d < j || d < k);
+                    boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) || (d < j || d < k);
                     if (cost_open > last_price && tem) {
+                        log.info("可能8");
                         isSell = true;
                     }
                 }
@@ -359,10 +368,10 @@ public class HuobiTest10 {
             double k = kdj1.get("K");
             double d = kdj1.get("D");
             double j = kdj1.get("J");
-            if (d < k && d < j && d < 70) {
+            if (d < k && d < j && d < 65) {
                 tem++;
             }
-            if (d > k && d > j && d > 30) {
+            if (d > k && d > j && d > 35) {
                 tem1--;
             }
         }
