@@ -41,7 +41,7 @@ public class HuobiTest10 {
     private static double d1 = 0;
     private static double k1 = 0;
     private static double macd1 = 0;
-    private static int buySize = 5;
+    private static int buySize = 14;
     private static long begin = 0L;
     List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
     Set<Double> buyList = new HashSet<>();
@@ -150,7 +150,7 @@ public class HuobiTest10 {
             MAX_WIN = PRICES_SIZE;
         }
 //        System.out.println("k:"+k+"d:"+d+"j:"+j+"macd:"+macd+"macd1:"+macd1);
-        if (d < k && d < j && d < 40 && macd > macd1 && j - d > 15) {
+        if (d < k && d < j && d < 35 && macd > macd1 && j - d > 10) {
             if (checkFiveMin() >= checkList.size() - 1) {
                 if (buyOrSell != -1) {
                     if (buyList.isEmpty()) {
@@ -182,7 +182,7 @@ public class HuobiTest10 {
             }
         }
 
-        if (d > k && d > j && d > 60 && macd < macd1 && d - j > 15) {
+        if (d > k && d > j && d > 65 && macd < macd1 && d - j > 10) {
             if (checkFiveMin() <= (checkList.size() - 1) * -1) {
                 if (buyOrSell != 1) {
                     if (buyList.isEmpty()) {
@@ -259,14 +259,14 @@ public class HuobiTest10 {
             } else {
                 if (buyOrSell == 1) {
                     boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) || (d > j || d > k);
-                    if (last_price > cost_open && tem) {
+                    if (last_price > cost_open + 2 && tem) {
                         log.info("可能7");
                         isSell = true;
                     }
                 }
                 if (buyOrSell == -1) {
                     boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) || (d < j || d < k);
-                    if (cost_open > last_price && tem) {
+                    if (cost_open > last_price + 2 && tem) {
                         log.info("可能8");
                         isSell = true;
                     }
@@ -368,10 +368,10 @@ public class HuobiTest10 {
             double k = kdj1.get("K");
             double d = kdj1.get("D");
             double j = kdj1.get("J");
-            if (d < k && d < j && d < 65) {
+            if (d < k && d < j && d < 50) {
                 tem++;
             }
-            if (d > k && d > j && d > 35) {
+            if (d > k && d > j && d > 50) {
                 tem1--;
             }
         }
