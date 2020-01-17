@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 
 //@Component
 @Slf4j
-public class HuobiTest11 {
+public class HuobiTest14 {
 
     private static final String API_KEY = "12345678";
     private static final String SECRET_KEY = "123456789";
@@ -36,13 +35,13 @@ public class HuobiTest11 {
     private static double k1 = 0;
     private static double macd1 = 0;
     @Value("${huobi.volume}")
-    int buySize;
+    int buySize=1111;
     private static long begin = 0L;
-    List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
+    List<String> checkList = Arrays.asList("5min", "15min");
     Set<Double> buyList = new HashSet<>();
     private static boolean isSell = false;
-    private static int PRICES_SIZE = 10;
-    private static int MAX_WIN = 12;
+    private static int PRICES_SIZE = 72;
+    private static int MAX_WIN = PRICES_SIZE;
     private static String volume = "0";
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
     List<Double> prices1 = new ArrayList<>(PRICES_SIZE);
@@ -145,7 +144,7 @@ public class HuobiTest11 {
             MAX_WIN = PRICES_SIZE;
         }
 //        System.out.println("k:"+k+"d:"+d+"j:"+j+"macd:"+macd+"macd1:"+macd1);
-        if (d < k && d < j && d < 50 && macd > macd1 && j - d > 10) {
+        if (d < k || d < j || d < 90) {
             if (checkFiveMin() >= checkList.size() - 1) {
                 if (buyOrSell != -1) {
                     if (buyList.isEmpty()) {
@@ -177,7 +176,7 @@ public class HuobiTest11 {
             }
         }
 
-        if (d > k && d > j && d > 50 && macd < macd1 && d - j > 10) {
+        if (d > k || d > j || d > 20) {
             if (checkFiveMin() <= (checkList.size() - 1) * -1) {
                 if (buyOrSell != 1) {
                     if (buyList.isEmpty()) {
@@ -212,7 +211,7 @@ public class HuobiTest11 {
         if (!volume.equals("0")) {
             if (buyOrSell == 1) {
                 if (MAX_WIN == PRICES_SIZE) {
-                    if (cost_open - last_price > last_price / 120) {
+                    if (cost_open - last_price > 50) {
                         MAX_WIN = PRICES_SIZE - 5;
                         log.info("修改盈利价格：{}", MAX_WIN);
                     }
@@ -224,7 +223,7 @@ public class HuobiTest11 {
             }
             if (buyOrSell == -1) {
                 if (MAX_WIN == PRICES_SIZE) {
-                    if (last_price - cost_open > last_price / 120) {
+                    if (last_price - cost_open > 50) {
                         MAX_WIN = PRICES_SIZE - 5;
                         log.info("修改盈利价格：{}", MAX_WIN);
                     }
@@ -253,14 +252,14 @@ public class HuobiTest11 {
                 }
             } else {
                 if (buyOrSell == 1) {
-                    boolean tem = d > j || d > k || Math.abs(d - j) < 10;
+                    boolean tem = (d < d1 && j < j1) || (k < k1 && j < j1) || (d < d1 && k < k1) || (d > j || d > k);
                     if (last_price > cost_open + 2 && tem) {
                         log.info("可能7");
                         isSell = true;
                     }
                 }
                 if (buyOrSell == -1) {
-                    boolean tem = d < j || d < k || Math.abs(d - j) < 10;
+                    boolean tem = (d > d1 && j > j1) || (k > k1 && j > j1) || (d > d1 && k > k1) || (d < j || d < k);
                     if (cost_open > last_price + 2 && tem) {
                         log.info("可能8");
                         isSell = true;
