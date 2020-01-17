@@ -48,8 +48,8 @@ public class HuobiTest11 {
     List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min", "4hour");
     Set<Double> buyList = new HashSet<>();
     private static boolean isSell = false;
-    private static int PRICES_SIZE = 12;
-    private static int MAX_WIN = PRICES_SIZE;
+    private static int PRICES_SIZE = 6;
+    private static int MAX_WIN = 12;
     private static String volume = "0";
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
     List<Double> prices1 = new ArrayList<>(PRICES_SIZE);
