@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-//@Component
+@Component
 @Slf4j
 public class HuobiTest11 {
 
@@ -208,6 +208,18 @@ public class HuobiTest11 {
                 }
             }
         }
+        int temp = checkForSell();
+        if (volume.equals("0")) {
+            if (temp == checkList.size() * -1) {
+                log.info("止损策略：sell");
+                open("sell", buySize + "");
+            }
+            if (temp == checkList.size()) {
+                log.info("止损策略：sell");
+                open("buy", buySize + "");
+            }
+        }
+
 
         if (!volume.equals("0")) {
             if (buyOrSell == 1) {
@@ -221,6 +233,10 @@ public class HuobiTest11 {
                     log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
                     open("buy", buySize + "");
                 }
+                if (temp == checkList.size() * -1) {
+                    log.info("止损策略：sell");
+                    isSell = true;
+                }
             }
             if (buyOrSell == -1) {
                 if (MAX_WIN == PRICES_SIZE) {
@@ -232,6 +248,10 @@ public class HuobiTest11 {
                 if (last_price - cost_open > last_price / 50 && checkList(last_price)) {
                     log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
                     open("sell", buySize + "");
+                }
+                if (temp == checkList.size()) {
+                    log.info("止损策略：buy");
+                    isSell = true;
                 }
             }
             if (begin < 1) {
@@ -335,6 +355,48 @@ public class HuobiTest11 {
         }
         return 0;
 
+    }
+
+    private int checkForSell() throws IOException, HttpException {
+        int tem = 0;
+        int tem1 = 0;
+        for (String period : checkList) {
+            String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "480");
+            JSONObject obj = JSON.parseObject(res);
+            JSONArray arr = obj.getJSONArray("data");
+            double[] maxPrice = new double[arr.size() + 1];
+            double[] minPrice = new double[arr.size() + 1];
+            double[] closePrice = new double[arr.size() + 1];
+            ChartDataBean character = new ChartDataBean();
+            List<Double> closelist = new ArrayList<>();
+            for (int i = 0; i <= arr.size() - 1; i++) {
+                JSONObject json = arr.getJSONObject(i);
+                maxPrice[i] = json.getDouble("high");
+                minPrice[i] = json.getDouble("low");
+                closePrice[i] = json.getDouble("close");
+                closelist.add(json.getDouble("close"));
+            }
+            character.setClose(closePrice);
+            character.setHigh(maxPrice);
+            character.setLow(minPrice);
+            Map<String, Double> kdj1 = KDJ.getKDJ(14, 1, 3, character);
+            double k = kdj1.get("K");
+            double d = kdj1.get("D");
+            double j = kdj1.get("J");
+            if (d < k && d < j && j - d > 20) {
+                tem++;
+            }
+            if (d > k && d > j && d - j > 20) {
+                tem1--;
+            }
+        }
+        if (Math.abs(tem) > Math.abs(tem1)) {
+            return tem;
+        }
+        if (Math.abs(tem) < Math.abs(tem1)) {
+            return tem1;
+        }
+        return 0;
     }
 
     private int checkFiveMin() throws IOException, HttpException {

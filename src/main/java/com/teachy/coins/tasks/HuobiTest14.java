@@ -40,7 +40,7 @@ public class HuobiTest14 {
     List<String> checkList = Arrays.asList("5min", "15min");
     Set<Double> buyList = new HashSet<>();
     private static boolean isSell = false;
-    private static int PRICES_SIZE = 72;
+    private static int PRICES_SIZE = 7211;
     private static int MAX_WIN = PRICES_SIZE;
     private static String volume = "0";
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
@@ -144,7 +144,7 @@ public class HuobiTest14 {
             MAX_WIN = PRICES_SIZE;
         }
 //        System.out.println("k:"+k+"d:"+d+"j:"+j+"macd:"+macd+"macd1:"+macd1);
-        if (d < k || d < j || d < 90) {
+        if (d < k && d < j && d < 50 && macd > macd1 && j - d > 10) {
             if (checkFiveMin() >= checkList.size() - 1) {
                 if (buyOrSell != -1) {
                     if (buyList.isEmpty()) {
