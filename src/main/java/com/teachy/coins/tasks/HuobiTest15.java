@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 //@Component
 @Slf4j
-public class HuobiTest11 {
+public class HuobiTest15 {
 
     private static final String API_KEY = "12345678";
     private static final String SECRET_KEY = "123456789";
@@ -56,14 +56,14 @@ public class HuobiTest11 {
         }
     }
 
-    @Scheduled(cron = "*/1 * * * * ?")
-    public void doTask1() {
-        try {
-            task1();
-        } catch (Exception e) {
-            log.info("采集错误1:{}", e.getMessage());
-        }
-    }
+//    @Scheduled(cron = "*/1 * * * * ?")
+//    public void doTask1() {
+//        try {
+//            task1();
+//        } catch (Exception e) {
+//            log.info("采集错误1:{}", e.getMessage());
+//        }
+//    }
 
     private void task1() throws IOException, HttpException {
         String positionInfo1 = futurePostV1.futureMarketHistoryTrade("BTC_CQ", "1");
@@ -112,15 +112,6 @@ public class HuobiTest11 {
     }
 
     private void task() throws Exception {
-        futurePostV1.futureContractCancelall("BTC");
-        checkHuoBi();
-        if (kdjMap.isEmpty() || macdMap.isEmpty()) {
-            return;
-        }
-        double k = kdjMap.get("K");
-        double d = kdjMap.get("D");
-        double j = kdjMap.get("J");
-        double macd = macdMap.get("MACD");
         JSONObject jsonObject;
         double cost_open = 0;
         double last_price = 0;
@@ -143,160 +134,6 @@ public class HuobiTest11 {
             buyOrSell = 0;
             isSell = false;
             MAX_WIN = PRICES_SIZE;
-        }
-        if (d < k && d < j && d < 50 && macd > macd1 && j - d > 10) {
-            if (checkFiveMin() >= checkList.size() - 1) {
-                if (buyOrSell != -1) {
-                    if (buyList.isEmpty()) {
-                        log.info("open buy --size");
-                        open("buy", buySize + "");
-                    } else if (cost_open - last_price > last_price / 100 && checkList(last_price)) {
-                        log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                        open("buy", buySize + "");
-                    }
-                } else {
-                    log.info("可能1");
-                    isSell = true;
-                }
-            } else if (checkFiveMin() >= checkList.size() - 2) {
-                if (check1Min(last_price) == 1) {
-                    if (buyOrSell != -1) {
-                        if (buyList.isEmpty()) {
-                            log.info("open buy --size+check1Min");
-                            open("buy", buySize + "");
-                        } else if (cost_open - last_price > last_price / 100 && checkList(last_price)) {
-                            log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                            open("buy", buySize + "");
-                        }
-                    } else {
-                        log.info("可能2");
-                        isSell = true;
-                    }
-                }
-            }
-        }
-
-        if (d > k && d > j && d > 50 && macd < macd1 && d - j > 10) {
-            if (checkFiveMin() <= (checkList.size() - 1) * -1) {
-                if (buyOrSell != 1) {
-                    if (buyList.isEmpty()) {
-                        log.info("open sell --size");
-                        open("sell", buySize + "");
-                    } else if (last_price - cost_open > last_price / 100 && checkList(last_price)) {
-                        log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                        open("sell", buySize + "");
-                    }
-                } else {
-                    log.info("可能3");
-                    isSell = true;
-                }
-            } else if (checkFiveMin() <= (checkList.size() - 2) * -1) {
-                if (check1Min(last_price) == -1) {
-                    if (buyOrSell != 1) {
-                        if (buyList.isEmpty()) {
-                            log.info("open sell --size+check1Min");
-                            open("sell", buySize + "");
-                        } else if (last_price - cost_open > last_price / 100 && checkList(last_price)) {
-                            log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                            open("sell", buySize + "");
-                        }
-                    } else {
-                        log.info("可能4");
-                        isSell = true;
-                    }
-                }
-            }
-        }
-        if (volume.equals("0")) {
-            int temp1 = checkForSell1();
-            if (temp1 == checkList.size() * -1) {
-                log.info("止损策略：sell");
-                open("sell", buySize + "");
-            }
-            if (temp1 == checkList.size()) {
-                log.info("止损策略：sell");
-                open("buy", buySize + "");
-            }
-        }
-
-
-        if (!volume.equals("0")) {
-            int temp = checkForSell();
-            if (buyOrSell == 1) {
-                if (MAX_WIN == PRICES_SIZE) {
-                    if (cost_open - last_price > last_price / 120) {
-                        MAX_WIN = PRICES_SIZE - 5;
-                        log.info("修改盈利价格：{}", MAX_WIN);
-                    }
-                }
-                if (cost_open - last_price > last_price / 50 && checkList(last_price)) {
-                    log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                    open("buy", buySize + "");
-                }
-                if (temp == checkList.size() * -1) {
-                    log.info("止损策略：sell");
-                    isSell = true;
-                }
-            }
-            if (buyOrSell == -1) {
-                if (MAX_WIN == PRICES_SIZE) {
-                    if (last_price - cost_open > last_price / 120) {
-                        MAX_WIN = PRICES_SIZE - 5;
-                        log.info("修改盈利价格：{}", MAX_WIN);
-                    }
-                }
-                if (last_price - cost_open > last_price / 50 && checkList(last_price)) {
-                    log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                    open("sell", buySize + "");
-                }
-                if (temp == checkList.size()) {
-                    log.info("止损策略：buy");
-                    isSell = true;
-                }
-            }
-            if (begin < 1) {
-                begin = System.currentTimeMillis();
-            }
-            boolean isMore = Integer.valueOf(volume.substring(0, volume.indexOf("."))) <= buySize;
-            if (isMore && System.currentTimeMillis() - begin < 180 * 60 * 1000 && MAX_WIN == PRICES_SIZE) {
-                if (buyOrSell == 1) {
-                    if (last_price - cost_open >= MAX_WIN && (d > j || d > k || Math.abs(d - j) < 10) && macd < macd1 && Math.abs(macd - macd1) > 0.05) {
-                        if (checkFive(1)) {
-                            log.info("可能5");
-                            isSell = true;
-                        }
-                    }
-                }
-                if (buyOrSell == -1) {
-                    if (cost_open - last_price >= MAX_WIN && (d < j || d < k || Math.abs(d - j) < 10) && macd > macd1 && Math.abs(macd - macd1) > 0.05) {
-                        if (checkFive(-1)) {
-                            log.info("可能6");
-                            isSell = true;
-                        }
-                    }
-                }
-            } else {
-                if (buyOrSell == 1) {
-                    boolean tem = d > j || d > k || Math.abs(d - j) < 10;
-                    if (last_price > cost_open + 10 && tem) {
-                        log.info("可能7");
-                        isSell = true;
-                    }
-                }
-                if (buyOrSell == -1) {
-                    boolean tem = d < j || d < k || Math.abs(d - j) < 10;
-                    if (cost_open > last_price + 10 && tem) {
-                        log.info("可能8");
-                        isSell = true;
-                    }
-                }
-            }
-        }
-        j1 = j;
-        d1 = d;
-        k1 = k;
-        if (macd1 != macd) {
-            macd1 = macd;
         }
     }
 
@@ -359,6 +196,45 @@ public class HuobiTest11 {
         }
         return 0;
 
+    }
+
+    private int checkForSell2() throws IOException, HttpException {
+        List<Double> listk = new ArrayList<>();
+        List<Double> listd = new ArrayList<>();
+        for (String period : checkList) {
+            String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "480");
+            JSONObject obj = JSON.parseObject(res);
+            JSONArray arr = obj.getJSONArray("data");
+            double[] maxPrice = new double[arr.size() + 1];
+            double[] minPrice = new double[arr.size() + 1];
+            double[] closePrice = new double[arr.size() + 1];
+            ChartDataBean character = new ChartDataBean();
+            List<Double> closelist = new ArrayList<>();
+            for (int i = 0; i <= arr.size() - 1; i++) {
+                JSONObject json = arr.getJSONObject(i);
+                maxPrice[i] = json.getDouble("high");
+                minPrice[i] = json.getDouble("low");
+                closePrice[i] = json.getDouble("close");
+                closelist.add(json.getDouble("close"));
+            }
+            character.setClose(closePrice);
+            character.setHigh(maxPrice);
+            character.setLow(minPrice);
+            Map<String, Double> kdj1 = KDJ.getKDJ(14, 1, 3, character);
+            double k = kdj1.get("K");
+            double d = kdj1.get("D");
+            double j = kdj1.get("J");
+            listk.add(k);
+            listk.add(j);
+            listd.add(d);
+            listd.add(d);
+        }
+        DoubleSummaryStatistics stream = listk.stream().mapToDouble(e -> e).summaryStatistics();
+        DoubleSummaryStatistics stream1 = listd.stream().mapToDouble(e -> e).summaryStatistics();
+        if(stream.getSum()-stream1.getSum()>80    ){
+
+        }
+        return 0;
     }
 
     private int checkForSell() throws IOException, HttpException {

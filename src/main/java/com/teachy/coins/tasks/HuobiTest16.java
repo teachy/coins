@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 //@Component
 @Slf4j
-public class HuobiTest11 {
+public class HuobiTest16 {
 
     private static final String API_KEY = "12345678";
     private static final String SECRET_KEY = "123456789";
@@ -31,9 +31,6 @@ public class HuobiTest11 {
     Map<String, Double> kdjMap = new HashMap<>();
     Map<String, Double> macdMap = new HashMap<>();
     private static int buyOrSell = 0;
-    private static double j1 = 0;
-    private static double d1 = 0;
-    private static double k1 = 0;
     private static double macd1 = 0;
     @Value("${huobi.volume}")
     int buySize;
@@ -46,8 +43,10 @@ public class HuobiTest11 {
     private static String volume = "0";
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
     List<Double> prices1 = new ArrayList<>(PRICES_SIZE);
+    List<Double> listk = new ArrayList<>();
+    List<Double> listd = new ArrayList<>();
 
-    @Scheduled(cron = "*/3 * * * * ?")
+    @Scheduled(cron = "*/2 * * * * ?")
     public void doTask() {
         try {
             task();
@@ -101,10 +100,10 @@ public class HuobiTest11 {
             int temp = 0;
             DoubleSummaryStatistics stream = prices.stream().mapToDouble(e -> e).summaryStatistics();
             double avg = stream.getAverage();
-            if (prices.get(0) > prices.get(1) && prices.get(0) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 2) > prices.get(PRICES_SIZE - 1) && prices.get(PRICES_SIZE - 1) < avg) {
+            if (prices.get(0) > prices.get(1) && prices.get(0) > prices.get(prices.size() - 1) && prices.get(prices.size() - 2) > prices.get(prices.size() - 1) && prices.get(prices.size() - 1) < avg) {
                 temp = -1;
             }
-            if (prices.get(PRICES_SIZE - 1) > prices.get(PRICES_SIZE - 2) && prices.get(PRICES_SIZE - 1) > prices.get(0) && prices.get(1) > prices.get(0) && prices.get(PRICES_SIZE - 1) > avg) {
+            if (prices.get(prices.size() - 1) > prices.get(prices.size() - 2) && prices.get(prices.size() - 1) > prices.get(0) && prices.get(1) > prices.get(0) && prices.get(prices.size() - 1) > avg) {
                 temp = 1;
             }
             return temp;
@@ -142,92 +141,46 @@ public class HuobiTest11 {
             begin = System.currentTimeMillis();
             buyOrSell = 0;
             isSell = false;
-            MAX_WIN = PRICES_SIZE;
-        }
-        if (d < k && d < j && d < 50 && macd > macd1 && j - d > 10) {
-            if (checkFiveMin() >= checkList.size() - 1) {
-                if (buyOrSell != -1) {
-                    if (buyList.isEmpty()) {
-                        log.info("open buy --size");
-                        open("buy", buySize + "");
-                    } else if (cost_open - last_price > last_price / 100 && checkList(last_price)) {
-                        log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                        open("buy", buySize + "");
-                    }
-                } else {
-                    log.info("可能1");
-                    isSell = true;
-                }
-            } else if (checkFiveMin() >= checkList.size() - 2) {
-                if (check1Min(last_price) == 1) {
-                    if (buyOrSell != -1) {
-                        if (buyList.isEmpty()) {
-                            log.info("open buy --size+check1Min");
-                            open("buy", buySize + "");
-                        } else if (cost_open - last_price > last_price / 100 && checkList(last_price)) {
-                            log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                            open("buy", buySize + "");
-                        }
-                    } else {
-                        log.info("可能2");
-                        isSell = true;
-                    }
-                }
-            }
+            MAX_WIN = 20;
         }
 
-        if (d > k && d > j && d > 50 && macd < macd1 && d - j > 10) {
-            if (checkFiveMin() <= (checkList.size() - 1) * -1) {
-                if (buyOrSell != 1) {
-                    if (buyList.isEmpty()) {
-                        log.info("open sell --size");
-                        open("sell", buySize + "");
-                    } else if (last_price - cost_open > last_price / 100 && checkList(last_price)) {
-                        log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                        open("sell", buySize + "");
-                    }
-                } else {
-                    log.info("可能3");
-                    isSell = true;
+        int temp1 = checkForSell1();
+        int res = checkForSell2();
+        if (res == 1 || temp1 == checkList.size() || (d < k && d < j && d < 30 && macd > macd1 && j - d > 20 && checkFiveMin() >= checkList.size() - 1)) {
+            log.info("open buy --size  res:{}  temp1:{}", res, temp1);
+            if (buyOrSell != -1) {
+                if (buyList.isEmpty()) {
+                    open("buy", buySize + "");
+                } else if (cost_open - last_price > last_price / 100 && checkList(last_price)) {
+                    log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                    open("buy", buySize + "");
                 }
-            } else if (checkFiveMin() <= (checkList.size() - 2) * -1) {
-                if (check1Min(last_price) == -1) {
-                    if (buyOrSell != 1) {
-                        if (buyList.isEmpty()) {
-                            log.info("open sell --size+check1Min");
-                            open("sell", buySize + "");
-                        } else if (last_price - cost_open > last_price / 100 && checkList(last_price)) {
-                            log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
-                            open("sell", buySize + "");
-                        }
-                    } else {
-                        log.info("可能4");
-                        isSell = true;
-                    }
-                }
+            } else {
+                log.info("可能1");
+                isSell = true;
             }
         }
-        if (volume.equals("0")) {
-            int temp1 = checkForSell1();
-            if (temp1 == checkList.size() * -1) {
-                log.info("止损策略：sell");
-                open("sell", buySize + "");
+        if (res == -1 || temp1 == checkList.size() * -1 || (d > k && d > j && d > 70 && macd < macd1 && d - j > 20 && checkFiveMin() <= (checkList.size() - 1) * -1)) {
+            log.info("open sell --size  res:{}  temp1:{}", res, temp1);
+            if (buyOrSell != 1) {
+                if (buyList.isEmpty()) {
+                    open("sell", buySize + "");
+                } else if (last_price - cost_open > last_price / 100 && checkList(last_price)) {
+                    log.info("开始补仓，大于50---开仓价格:{}补仓价格:{}", cost_open, last_price);
+                    open("sell", buySize + "");
+                }
+            } else {
+                log.info("可能2");
+                isSell = true;
             }
-            if (temp1 == checkList.size()) {
-                log.info("止损策略：sell");
-                open("buy", buySize + "");
-            }
+
         }
-
-
         if (!volume.equals("0")) {
             int temp = checkForSell();
             if (buyOrSell == 1) {
-                if (MAX_WIN == PRICES_SIZE) {
-                    if (cost_open - last_price > last_price / 120) {
-                        MAX_WIN = PRICES_SIZE - 5;
-                        log.info("修改盈利价格：{}", MAX_WIN);
-                    }
+                if (cost_open - last_price > last_price / 120) {
+                    MAX_WIN = PRICES_SIZE - 5;
+                    log.info("修改盈利价格：{}", MAX_WIN);
                 }
                 if (cost_open - last_price > last_price / 50 && checkList(last_price)) {
                     log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
@@ -239,11 +192,9 @@ public class HuobiTest11 {
                 }
             }
             if (buyOrSell == -1) {
-                if (MAX_WIN == PRICES_SIZE) {
-                    if (last_price - cost_open > last_price / 120) {
-                        MAX_WIN = PRICES_SIZE - 5;
-                        log.info("修改盈利价格：{}", MAX_WIN);
-                    }
+                if (last_price - cost_open > last_price / 120) {
+                    MAX_WIN = PRICES_SIZE - 5;
+                    log.info("修改盈利价格：{}", MAX_WIN);
                 }
                 if (last_price - cost_open > last_price / 50 && checkList(last_price)) {
                     log.info("开始补仓，大于100---开仓价格:{}补仓价格:{}", cost_open, last_price);
@@ -258,10 +209,10 @@ public class HuobiTest11 {
                 begin = System.currentTimeMillis();
             }
             boolean isMore = Integer.valueOf(volume.substring(0, volume.indexOf("."))) <= buySize;
-            if (isMore && System.currentTimeMillis() - begin < 180 * 60 * 1000 && MAX_WIN == PRICES_SIZE) {
+            if (isMore && System.currentTimeMillis() - begin < 180 * 60 * 1000 && MAX_WIN == 20) {
                 if (buyOrSell == 1) {
                     if (last_price - cost_open >= MAX_WIN && (d > j || d > k || Math.abs(d - j) < 10) && macd < macd1 && Math.abs(macd - macd1) > 0.05) {
-                        if (checkFive(1)) {
+                        if (checkFive(1) && res != 1) {
                             log.info("可能5");
                             isSell = true;
                         }
@@ -269,7 +220,7 @@ public class HuobiTest11 {
                 }
                 if (buyOrSell == -1) {
                     if (cost_open - last_price >= MAX_WIN && (d < j || d < k || Math.abs(d - j) < 10) && macd > macd1 && Math.abs(macd - macd1) > 0.05) {
-                        if (checkFive(-1)) {
+                        if (checkFive(-1) && res != -1) {
                             log.info("可能6");
                             isSell = true;
                         }
@@ -292,12 +243,23 @@ public class HuobiTest11 {
                 }
             }
         }
-        j1 = j;
-        d1 = d;
-        k1 = k;
         if (macd1 != macd) {
             macd1 = macd;
         }
+    }
+
+
+    private int checkForSell2() {
+        DoubleSummaryStatistics stream = listk.stream().mapToDouble(e -> e).summaryStatistics();
+        DoubleSummaryStatistics stream1 = listd.stream().mapToDouble(e -> e).summaryStatistics();
+        System.out.println(stream.getSum() - stream1.getSum());
+        if (stream.getSum() - stream1.getSum() > 200) {
+            return 1;
+        }
+        if (stream.getSum() - stream1.getSum() < -200) {
+            return -1;
+        }
+        return 0;
     }
 
     private void open(String bos, String volume) throws IOException, HttpException {
@@ -406,6 +368,8 @@ public class HuobiTest11 {
     private int checkForSell1() throws IOException, HttpException {
         int tem = 0;
         int tem1 = 0;
+        listk.clear();
+        listd.clear();
         for (String period : checkList) {
             String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", period, "480");
             JSONObject obj = JSON.parseObject(res);
@@ -429,6 +393,10 @@ public class HuobiTest11 {
             double k = kdj1.get("K");
             double d = kdj1.get("D");
             double j = kdj1.get("J");
+            listk.add(k);
+            listk.add(j);
+            listd.add(d);
+            listd.add(d);
             if (d < k && d < j && j - d > 30 && d < 60) {
                 tem++;
             }
@@ -471,10 +439,10 @@ public class HuobiTest11 {
             double k = kdj1.get("K");
             double d = kdj1.get("D");
             double j = kdj1.get("J");
-            if (d < k && d < j && d < 50) {
+            if (d < k && d < j && d < 40) {
                 tem++;
             }
-            if (d > k && d > j && d > 50) {
+            if (d > k && d > j && d > 60) {
                 tem1--;
             }
         }
