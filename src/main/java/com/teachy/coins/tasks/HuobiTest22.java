@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 //@Component
 @Slf4j
-public class HuobiTest20 {
+public class HuobiTest22 {
 
     private static final String API_KEY = "12345678";
     private static final String SECRET_KEY = "123456789";
@@ -34,11 +34,11 @@ public class HuobiTest20 {
     private static double macd1 = 0;
     @Value("${huobi.volume}")
     int buySize;
-    List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min");
+    List<String> checkList = Arrays.asList("5min", "15min", "30min", "60min", "4hour");
     Set<Double> buyList = new HashSet<>();
     private static boolean isSell = false;
     private static int PRICES_SIZE = 10;
-    private static int MAX_WIN = 15;
+    private static int MAX_WIN = 50;
     private static double HASH_WIN = 0;
     private static String volume = "0";
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
@@ -126,11 +126,15 @@ public class HuobiTest20 {
         JSONObject jsonObject;
         double cost_open = 0;
         double last_price = 0;
+
+        String allMoney = futurePostV1.futureContractAccountInfo("BTC");
+        double margin_static = JSON.parseObject(allMoney).getJSONArray("data").getJSONObject(0).getDouble("margin_static");
         String positionInfo1 = futurePostV1.futureMarketHistoryTrade("BTC_CQ", "1");
         jsonObject = JSON.parseObject(positionInfo1);
         last_price = jsonObject.getJSONArray("data").getJSONObject(0).getJSONArray("data").getJSONObject(0).getDouble("price");
         String positionInfo = futurePostV1.futureContractPositionInfo("BTC");
         jsonObject = JSON.parseObject(positionInfo);
+        buySize = (int) (Math.floor(margin_static*last_price*6.9*20/700)-1);
         if (jsonObject.getJSONArray("data").size() > 0) {
             cost_open = jsonObject.getJSONArray("data").getJSONObject(0).getDouble("cost_open");
             last_price = jsonObject.getJSONArray("data").getJSONObject(0).getDouble("last_price");
@@ -201,10 +205,10 @@ public class HuobiTest20 {
     private int checkForSell2() {
         DoubleSummaryStatistics stream = listk.stream().mapToDouble(e -> e).summaryStatistics();
         DoubleSummaryStatistics stream1 = listd.stream().mapToDouble(e -> e).summaryStatistics();
-        if (stream.getSum() - stream1.getSum() > 180) {
+        if (stream.getSum() - stream1.getSum() > 250) {
             return 1;
         }
-        if (stream.getSum() - stream1.getSum() < -180) {
+        if (stream.getSum() - stream1.getSum() < -250) {
             return -1;
         }
         return 0;
@@ -355,11 +359,41 @@ public class HuobiTest20 {
             listk.add(j);
             listd.add(d);
             listd.add(d);
-            if (d < 40) {
-                tem1--;
-            }
-            if (d > 60) {
-                tem++;
+            if (period.equals("4hour")) {
+                if (d < 30) {
+                    tem++;
+                }
+                if (d > 70) {
+                    tem1--;
+                }
+            } else if (period.equals("60min")) {
+                if (d < 35) {
+                    tem++;
+                }
+                if (d > 65) {
+                    tem1--;
+                }
+            }else if (period.equals("30min")) {
+                if (d < 60) {
+                    tem++;
+                }
+                if (d > 40) {
+                    tem1--;
+                }
+            }else if (period.equals("15min")) {
+                if (d < 65) {
+                    tem++;
+                }
+                if (d > 35) {
+                    tem1--;
+                }
+            }else if (period.equals("5min")) {
+                if (d < 70) {
+                    tem++;
+                }
+                if (d > 30) {
+                    tem1--;
+                }
             }
         }
         if (Math.abs(tem) > Math.abs(tem1)) {
