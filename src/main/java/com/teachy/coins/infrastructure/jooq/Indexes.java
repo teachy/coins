@@ -4,6 +4,7 @@
 package com.teachy.coins.infrastructure.jooq;
 
 
+import com.teachy.coins.infrastructure.jooq.tables.CoinList;
 import com.teachy.coins.infrastructure.jooq.tables.Hosts;
 import com.teachy.coins.infrastructure.jooq.tables.IpList;
 import com.teachy.coins.infrastructure.jooq.tables.Sources;
@@ -37,6 +38,8 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index COIN_LIST_PRIMARY = Indexes0.COIN_LIST_PRIMARY;
+    public static final Index HOSTS_IP = Indexes0.HOSTS_IP;
     public static final Index HOSTS_PRIMARY = Indexes0.HOSTS_PRIMARY;
     public static final Index IP_LIST_PRIMARY = Indexes0.IP_LIST_PRIMARY;
     public static final Index SOURCES_NGRAM_IDX = Indexes0.SOURCES_NGRAM_IDX;
@@ -56,6 +59,8 @@ public class Indexes {
     // -------------------------------------------------------------------------
 
     private static class Indexes0 {
+        public static Index COIN_LIST_PRIMARY = Internal.createIndex("PRIMARY", CoinList.COIN_LIST, new OrderField[] { CoinList.COIN_LIST.ID }, true);
+        public static Index HOSTS_IP = Internal.createIndex("ip", Hosts.HOSTS, new OrderField[] { Hosts.HOSTS.IP }, true);
         public static Index HOSTS_PRIMARY = Internal.createIndex("PRIMARY", Hosts.HOSTS, new OrderField[] { Hosts.HOSTS.ID }, true);
         public static Index IP_LIST_PRIMARY = Internal.createIndex("PRIMARY", IpList.IP_LIST, new OrderField[] { IpList.IP_LIST.ID }, true);
         public static Index SOURCES_NGRAM_IDX = Internal.createIndex("ngram_idx", Sources.SOURCES, new OrderField[] { Sources.SOURCES.NAME }, false);

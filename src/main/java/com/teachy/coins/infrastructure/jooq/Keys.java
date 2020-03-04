@@ -4,6 +4,7 @@
 package com.teachy.coins.infrastructure.jooq;
 
 
+import com.teachy.coins.infrastructure.jooq.tables.CoinList;
 import com.teachy.coins.infrastructure.jooq.tables.Hosts;
 import com.teachy.coins.infrastructure.jooq.tables.IpList;
 import com.teachy.coins.infrastructure.jooq.tables.Sources;
@@ -12,6 +13,7 @@ import com.teachy.coins.infrastructure.jooq.tables.SpiderQueue;
 import com.teachy.coins.infrastructure.jooq.tables.SpiderUnique;
 import com.teachy.coins.infrastructure.jooq.tables.SpiderUrl;
 import com.teachy.coins.infrastructure.jooq.tables.Tools;
+import com.teachy.coins.infrastructure.jooq.tables.records.CoinListRecord;
 import com.teachy.coins.infrastructure.jooq.tables.records.HostsRecord;
 import com.teachy.coins.infrastructure.jooq.tables.records.IpListRecord;
 import com.teachy.coins.infrastructure.jooq.tables.records.SourcesRecord;
@@ -56,7 +58,9 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final UniqueKey<CoinListRecord> KEY_COIN_LIST_PRIMARY = UniqueKeys0.KEY_COIN_LIST_PRIMARY;
     public static final UniqueKey<HostsRecord> KEY_HOSTS_PRIMARY = UniqueKeys0.KEY_HOSTS_PRIMARY;
+    public static final UniqueKey<HostsRecord> KEY_HOSTS_IP = UniqueKeys0.KEY_HOSTS_IP;
     public static final UniqueKey<IpListRecord> KEY_IP_LIST_PRIMARY = UniqueKeys0.KEY_IP_LIST_PRIMARY;
     public static final UniqueKey<SourcesRecord> KEY_SOURCES_PRIMARY = UniqueKeys0.KEY_SOURCES_PRIMARY;
     public static final UniqueKey<SourcesRecord> KEY_SOURCES_URL = UniqueKeys0.KEY_SOURCES_URL;
@@ -86,7 +90,9 @@ public class Keys {
     }
 
     private static class UniqueKeys0 {
+        public static final UniqueKey<CoinListRecord> KEY_COIN_LIST_PRIMARY = Internal.createUniqueKey(CoinList.COIN_LIST, "KEY_coin_list_PRIMARY", CoinList.COIN_LIST.ID);
         public static final UniqueKey<HostsRecord> KEY_HOSTS_PRIMARY = Internal.createUniqueKey(Hosts.HOSTS, "KEY_hosts_PRIMARY", Hosts.HOSTS.ID);
+        public static final UniqueKey<HostsRecord> KEY_HOSTS_IP = Internal.createUniqueKey(Hosts.HOSTS, "KEY_hosts_ip", Hosts.HOSTS.IP);
         public static final UniqueKey<IpListRecord> KEY_IP_LIST_PRIMARY = Internal.createUniqueKey(IpList.IP_LIST, "KEY_ip_list_PRIMARY", IpList.IP_LIST.ID);
         public static final UniqueKey<SourcesRecord> KEY_SOURCES_PRIMARY = Internal.createUniqueKey(Sources.SOURCES, "KEY_sources_PRIMARY", Sources.SOURCES.ID);
         public static final UniqueKey<SourcesRecord> KEY_SOURCES_URL = Internal.createUniqueKey(Sources.SOURCES, "KEY_sources_url", Sources.SOURCES.URL);

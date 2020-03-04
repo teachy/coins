@@ -28,7 +28,7 @@ public abstract class BaseDao extends Tables {
     @PostConstruct
     private void init() throws SQLException {
         Configuration configuration = new DefaultConfiguration().set(dataSource).set(getType());
-        configuration.set(new JooqLogListener());
+//        configuration.set(new JooqLogListener());
         create = DSL.using(configuration);
     }
 

@@ -4,6 +4,7 @@
 package com.teachy.coins.infrastructure.jooq;
 
 
+import com.teachy.coins.infrastructure.jooq.tables.CoinList;
 import com.teachy.coins.infrastructure.jooq.tables.Hosts;
 import com.teachy.coins.infrastructure.jooq.tables.IpList;
 import com.teachy.coins.infrastructure.jooq.tables.Sources;
@@ -28,6 +29,11 @@ import javax.annotation.Generated;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
+
+    /**
+     * The table <code>coin_list</code>.
+     */
+    public static final CoinList COIN_LIST = com.teachy.coins.infrastructure.jooq.tables.CoinList.COIN_LIST;
 
     /**
      * The table <code>hosts</code>.

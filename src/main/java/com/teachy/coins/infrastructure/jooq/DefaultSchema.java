@@ -4,6 +4,7 @@
 package com.teachy.coins.infrastructure.jooq;
 
 
+import com.teachy.coins.infrastructure.jooq.tables.CoinList;
 import com.teachy.coins.infrastructure.jooq.tables.Hosts;
 import com.teachy.coins.infrastructure.jooq.tables.IpList;
 import com.teachy.coins.infrastructure.jooq.tables.Sources;
@@ -37,12 +38,17 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DefaultSchema extends SchemaImpl {
 
-    private static final long serialVersionUID = -1177327497;
+    private static final long serialVersionUID = -213233130;
 
     /**
      * The reference instance of <code></code>
      */
     public static final DefaultSchema DEFAULT_SCHEMA = new DefaultSchema();
+
+    /**
+     * The table <code>coin_list</code>.
+     */
+    public final CoinList COIN_LIST = com.teachy.coins.infrastructure.jooq.tables.CoinList.COIN_LIST;
 
     /**
      * The table <code>hosts</code>.
@@ -109,6 +115,7 @@ public class DefaultSchema extends SchemaImpl {
 
     private final List<Table<?>> getTables0() {
         return Arrays.<Table<?>>asList(
+            CoinList.COIN_LIST,
             Hosts.HOSTS,
             IpList.IP_LIST,
             Sources.SOURCES,

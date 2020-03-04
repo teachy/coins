@@ -83,10 +83,12 @@ public class MySqlTask {
             try {
                 session = jSch.getSession("root", ip, port);
                 session.setPassword(pass);
+                session.setTimeout(1000);
                 Properties prop = new Properties();
                 prop.put("StrictHostKeyChecking", "no");
                 session.setConfig(prop);
                 session.connect();
+                System.out.println("1");
                 insert(ip, pass, true);
                 break;
             } catch (JSchException e) {
@@ -102,10 +104,11 @@ public class MySqlTask {
     public void connecMysql(String ip) {
         for (String pass : checkList) {
             try {
-                Class.forName("com.mysql.jdbc.Driver");
+                Class.forName("com.mysql.cj.jdbc.Driver");
                 String url = "jdbc:mysql://" + ip + ":3306/mysql?useSSL=false&connectTimeout=1500&socketTimeout=1500&&serverTimezone=UTC";
                 conn = (Connection) DriverManager.getConnection(url, USER, pass); //创建连接
                 insert(ip, pass, false);
+                System.out.println("2");
                 break;
             } catch (Exception e) {
                 if (e.getMessage().contains("YES")) {

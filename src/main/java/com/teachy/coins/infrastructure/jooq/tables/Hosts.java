@@ -41,7 +41,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Hosts extends TableImpl<HostsRecord> {
 
-    private static final long serialVersionUID = 503878625;
+    private static final long serialVersionUID = 812955567;
 
     /**
      * The reference instance of <code>hosts</code>
@@ -127,7 +127,7 @@ public class Hosts extends TableImpl<HostsRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.HOSTS_PRIMARY);
+        return Arrays.<Index>asList(Indexes.HOSTS_IP, Indexes.HOSTS_PRIMARY);
     }
 
     /**
@@ -151,7 +151,7 @@ public class Hosts extends TableImpl<HostsRecord> {
      */
     @Override
     public List<UniqueKey<HostsRecord>> getKeys() {
-        return Arrays.<UniqueKey<HostsRecord>>asList(Keys.KEY_HOSTS_PRIMARY);
+        return Arrays.<UniqueKey<HostsRecord>>asList(Keys.KEY_HOSTS_PRIMARY, Keys.KEY_HOSTS_IP);
     }
 
     /**
