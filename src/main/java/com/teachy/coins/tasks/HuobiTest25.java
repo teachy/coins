@@ -31,12 +31,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-//@Component
+@Component
 @Slf4j
-public class HuobiTest23 {
+public class HuobiTest25 {
 
-    private static final String API_KEY = "12345678";
-    private static final String SECRET_KEY = "123456789";
+    private static final String API_KEY = "734e43f7-e025c7ad-ht4tgq1e4t-689eb";
+    private static final String SECRET_KEY = "8d2f3ee4-12bf0a99-31b9f784-955d4";
     private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
@@ -50,13 +50,14 @@ public class HuobiTest23 {
     Set<Double> buyList = new HashSet<>();
     private static boolean isSell = false;
     private static int PRICES_SIZE = 10;
-    private static int MAX_WIN = 50;
+    private static int MAX_WIN = 80;
     private static double HASH_WIN = 0;
     private static String volume = "0";
     List<Double> prices = new ArrayList<>(PRICES_SIZE);
     List<Double> prices1 = new ArrayList<>(PRICES_SIZE);
     List<Double> listk = new ArrayList<>();
     List<Double> listd = new ArrayList<>();
+    List<Double> allResult = new ArrayList<>();
     private static double last_sell_price = 0;
     double margin_static;
     @Autowired
@@ -206,7 +207,6 @@ public class HuobiTest23 {
         last_price = jsonObject.getJSONArray("data").getJSONObject(0).getJSONArray("data").getJSONObject(0).getDouble("price");
         String positionInfo = futurePostV1.futureContractPositionInfo("BTC");
         jsonObject = JSON.parseObject(positionInfo);
-        buySize = (int) (Math.floor(margin_static * last_price * 6.9 * 20 / 700) - 1);
         if (jsonObject.getJSONArray("data").size() > 0) {
             cost_open = jsonObject.getJSONArray("data").getJSONObject(0).getDouble("cost_open");
             last_price = jsonObject.getJSONArray("data").getJSONObject(0).getDouble("last_price");
@@ -222,24 +222,26 @@ public class HuobiTest23 {
             HASH_WIN = 0;
         }
         if (volume.equals("0")) {
-            int temp1 = checkForSell1();
+            int temp = checkForSell1();
             int res = checkForSell2();
-            if (res == 1 && temp1 == checkList.size()) {
-                log.info("open buy --size  res:{}  temp1:{}", res, temp1);
+            if (temp > 1 && res == 1) {
+                log.info("open buy --size  res:{}", res);
                 open("buy", buySize + "");
             }
-            if (res == -1 && temp1 == checkList.size() * -1) {
-                log.info("open sell --size  res:{}  temp1:{}", res, temp1);
+            if (temp < -1 && res == -1) {
+                log.info("open sell --size  res:{}", res);
                 open("sell", buySize + "");
             }
         }
         if (!volume.equals("0")) {
+            allResult.clear();
             if (buyOrSell == 1) {
                 if (last_price - cost_open > HASH_WIN) {
                     HASH_WIN = last_price - cost_open;
                     return;
                 }
-                if (cost_open - last_price > 50) {
+                if (cost_open - last_price > 150) {
+                    System.out.println(allResult);
                     log.info("可能7--止损");
                     isSell = true;
                 }
@@ -255,7 +257,8 @@ public class HuobiTest23 {
                     HASH_WIN = cost_open - last_price;
                     return;
                 }
-                if (last_price - cost_open > 50) {
+                if (last_price - cost_open > 150) {
+                    System.out.println(allResult);
                     log.info("可能8--止损");
                     isSell = true;
                 }
@@ -277,14 +280,53 @@ public class HuobiTest23 {
     private int checkForSell2() {
         DoubleSummaryStatistics stream = listk.stream().mapToDouble(e -> e).summaryStatistics();
         DoubleSummaryStatistics stream1 = listd.stream().mapToDouble(e -> e).summaryStatistics();
-        if (stream.getSum() - stream1.getSum() > 220) {
-            return 1;
+        double res = stream.getSum() - stream1.getSum();
+        int index = 5;
+        int result = 0;
+        if (allResult.size() > index) {
+            if (allResult.get(0) > allResult.get(1)) {
+                if (allResult.get(allResult.size() - 1) < -250) {
+                    System.out.println("-1:" + allResult);
+                    result = -1;
+                }
+            } else {
+                if (allResult.get(allResult.size() - 1) > 250) {
+                    System.out.println("1:" + allResult);
+                    result = 1;
+                }
+            }
         }
-        if (stream.getSum() - stream1.getSum() < -220) {
-            return -1;
+
+        if (allResult.size() > 10) {
+            allResult.clear();
         }
-        return 0;
+        if (allResult.size() < 2) {
+            if (allResult.size() >= 1) {
+                if (Math.abs(allResult.get(0)) > 150) {
+                    allResult.clear();
+                }
+            }
+            allResult.add(res);
+        } else {
+            if (allResult.get(0) > allResult.get(1)) {
+                if (res < allResult.get(0)) {
+                    allResult.add(res);
+                } else {
+                    allResult.clear();
+                    allResult.add(res);
+                }
+            } else {
+                if (res > allResult.get(0)) {
+                    allResult.add(res);
+                } else {
+                    allResult.clear();
+                    allResult.add(res);
+                }
+            }
+        }
+        return result;
     }
+
 
     private void open(String bos, String volume) throws IOException, HttpException {
         if (bos.equals("buy")) {
@@ -432,39 +474,18 @@ public class HuobiTest23 {
             listd.add(d);
             listd.add(d);
             if (period.equals("4hour")) {
-                if (d < 35) {
-                    tem++;
+                if ((d < 40 && d > 0) || d > 100) {
+                    tem--;
                 }
-                if (d > 65) {
-                    tem1--;
+                if ((d > 60 && d < 100) || d < 0) {
+                    tem1++;
                 }
             } else if (period.equals("60min")) {
-                if (d < 40) {
-                    tem++;
+                if ((d < 50 && d > 0) || d > 100) {
+                    tem--;
                 }
-                if (d > 60) {
-                    tem1--;
-                }
-            } else if (period.equals("30min")) {
-                if (d < 60) {
-                    tem++;
-                }
-                if (d > 40) {
-                    tem1--;
-                }
-            } else if (period.equals("15min")) {
-                if (d < 65) {
-                    tem++;
-                }
-                if (d > 35) {
-                    tem1--;
-                }
-            } else if (period.equals("5min")) {
-                if (d < 70) {
-                    tem++;
-                }
-                if (d > 30) {
-                    tem1--;
+                if ((d > 50 && d < 100) || d < 0) {
+                    tem1++;
                 }
             }
         }

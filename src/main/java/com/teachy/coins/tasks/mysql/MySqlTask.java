@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.Random;
 
 
-@Component
+//@Component
 @Slf4j
 public class MySqlTask {
 
