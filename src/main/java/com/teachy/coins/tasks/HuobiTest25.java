@@ -31,12 +31,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-@Component
+//@Component
 @Slf4j
 public class HuobiTest25 {
 
-    private static final String API_KEY = "734e43f7-e025c7ad-ht4tgq1e4t-689eb";
-    private static final String SECRET_KEY = "8d2f3ee4-12bf0a99-31b9f784-955d4";
+    private static final String API_KEY = "12345678";
+    private static final String SECRET_KEY = "123456789";
     private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
@@ -221,8 +221,8 @@ public class HuobiTest25 {
             isSell = false;
             HASH_WIN = 0;
         }
+        int temp = checkForSell1();
         if (volume.equals("0")) {
-            int temp = checkForSell1();
             int res = checkForSell2();
             if (temp > 1 && res == 1) {
                 log.info("open buy --size  res:{}", res);
@@ -235,7 +235,12 @@ public class HuobiTest25 {
         }
         if (!volume.equals("0")) {
             allResult.clear();
+            int res = checkForSell3();
             if (buyOrSell == 1) {
+                if (res < 0) {
+                    log.info("可能888");
+                    isSell = true;
+                }
                 if (last_price - cost_open > HASH_WIN) {
                     HASH_WIN = last_price - cost_open;
                     return;
@@ -253,6 +258,10 @@ public class HuobiTest25 {
                 }
             }
             if (buyOrSell == -1) {
+                if (res > 0) {
+                    log.info("可能999");
+                    isSell = true;
+                }
                 if (cost_open - last_price > HASH_WIN) {
                     HASH_WIN = cost_open - last_price;
                     return;
@@ -281,16 +290,16 @@ public class HuobiTest25 {
         DoubleSummaryStatistics stream = listk.stream().mapToDouble(e -> e).summaryStatistics();
         DoubleSummaryStatistics stream1 = listd.stream().mapToDouble(e -> e).summaryStatistics();
         double res = stream.getSum() - stream1.getSum();
-        int index = 5;
+        int index = 4;
         int result = 0;
         if (allResult.size() > index) {
             if (allResult.get(0) > allResult.get(1)) {
-                if (allResult.get(allResult.size() - 1) < -250) {
+                if (allResult.get(allResult.size() - 1) < -220) {
                     System.out.println("-1:" + allResult);
                     result = -1;
                 }
             } else {
-                if (allResult.get(allResult.size() - 1) > 250) {
+                if (allResult.get(allResult.size() - 1) > 220) {
                     System.out.println("1:" + allResult);
                     result = 1;
                 }
@@ -327,6 +336,13 @@ public class HuobiTest25 {
         return result;
     }
 
+
+    private int checkForSell3() {
+        DoubleSummaryStatistics stream = listk.stream().mapToDouble(e -> e).summaryStatistics();
+        DoubleSummaryStatistics stream1 = listd.stream().mapToDouble(e -> e).summaryStatistics();
+        double res = stream.getSum() - stream1.getSum();
+        return res > 0 ? 1 : -1;
+    }
 
     private void open(String bos, String volume) throws IOException, HttpException {
         if (bos.equals("buy")) {
