@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class ScheduledThreadPoolConfig implements SchedulingConfigurer {
 
-    @Value("${thread.pool.corePoolSize:10}")
+    @Value("4")
     private int corePoolSize;
 
     @Override
