@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HuobiTest31 {
 
-    private static final String API_KEY = "83b82319-vqgdf4gsga-ee719d6c-1";
-    private static final String SECRET_KEY = "ae85e343-fb9df7fa-b7235f8c-218";
+    private static final String API_KEY = "83b82319-vqgdf4gsga-ee719d6c-b0b2-003";
+    private static final String SECRET_KEY = "ae85e343-fb9df7fa-b7235f8c-8091-008";
     private static final String URL_PREX = "https://api.btcgateway.pro";
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
@@ -47,6 +47,7 @@ public class HuobiTest31 {
     private static double HASH_WIN = 0;
     int jishuqi = 10;
 
+
     @Scheduled(cron = "*/30 * * * * ?")
     public void doTask() {
         try {
@@ -56,7 +57,7 @@ public class HuobiTest31 {
         }
     }
 
-    @Scheduled(cron = "*/2 * * * * ?")
+    @Scheduled(cron = "*/3 * * * * ?")
     public void doTask1() {
         try {
             task1();
@@ -148,25 +149,25 @@ public class HuobiTest31 {
             Node lastNode = getLast();
             if (buyOrSell == 1) {
                 temp = last_price - cost_open;
-                if (lastNode.getClose() < lastNode.getOpen()) {
+                if (lastNode.getClose() + 12 < lastNode.getOpen()) {
                     isSell = true;
                     log.info("止损策略2");
                 }
             } else {
                 temp = cost_open - last_price;
-                if (lastNode.getClose() > lastNode.getOpen()) {
+                if (lastNode.getClose() - 12 > lastNode.getOpen()) {
                     isSell = true;
                     log.info("止损策略2");
                 }
             }
-            if (temp < -200) {
+            if (temp < -150) {
                 log.info("止损策略");
                 isSell = true;
             }
             if (temp > HASH_WIN) {
                 HASH_WIN = temp;
             } else {
-                if (HASH_WIN - temp > 200) {
+                if (HASH_WIN - temp > 150) {
                     log.info("止损策略1");
                     isSell = true;
                 }
@@ -179,7 +180,7 @@ public class HuobiTest31 {
     }
 
     private Node getLast() throws IOException, HttpException {
-        String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", "60min", "8");
+        String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", "15min", "8");
         JSONObject obj = JSON.parseObject(res);
         JSONArray arr = obj.getJSONArray("data");
         List<Node> list = new ArrayList<>();
@@ -201,7 +202,7 @@ public class HuobiTest31 {
     }
 
     private int check1Min() throws IOException, HttpException {
-        String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", "60min", "8");
+        String res = futureGetV1.futureMarketHistoryKline("BTC_CQ", "15min", "8");
         JSONObject obj = JSON.parseObject(res);
         JSONArray arr = obj.getJSONArray("data");
         List<Node> list = new ArrayList<>();
@@ -219,14 +220,13 @@ public class HuobiTest31 {
                 list.add(new Node(open, close, high, low, vol));
             }
         }
-        log.info("list:{}  lastNode:{}", list, lastNode);
         List<Boolean> allRight = new ArrayList<>();
         int volCount = 0;
         for (Node eve : list) {
             if (lastNode.getVol() < eve.getVol()) {
                 allRight.add(false);
             }
-            if (lastNode.getVol() / eve.getVol() > 2) {
+            if (lastNode.getVol() / eve.getVol() > 5) {
                 volCount++;
             }
         }
@@ -251,6 +251,10 @@ public class HuobiTest31 {
             }
             if (lastNode.getClose() - lastNode.getLow() > lastNode.getOpen() - lastNode.getClose()) {
                 sell.add(false);
+            }
+            if (list.size() != 6) {
+                log.error("list 数据错误：{}", list);
+                log.error("arr 数据错误：{}", arr);
             }
             if (buy.size() == 0) {
                 log.info("buy---: list:{}  lastNode:{}", list, lastNode);
@@ -314,7 +318,7 @@ public class HuobiTest31 {
 
     private String doss(String buyOrSell, String openOrClose, String contractCode, String volume) throws IOException, HttpException {
         return futurePostV1.futureContractOrder("BTC", "quarter", contractCode, "", "", volume,
-                buyOrSell, openOrClose, "20", "opponent");
+                buyOrSell, openOrClose, "50", "opponent");
     }
 
 }
