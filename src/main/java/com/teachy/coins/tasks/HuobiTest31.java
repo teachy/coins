@@ -29,8 +29,10 @@ public class HuobiTest31 {
 
     private static final String API_KEY = "83b82319-vqgdf4gsga-ee719d6c-b0b2-003";
     private static final String SECRET_KEY = "ae85e343-fb9df7fa-b7235f8c-8091-008";
-    private static final String URL_PREX = "https://api.btcgateway.pro";
+    private static final String URL_PREX = "https://api.btcgateway.pro1";
+
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
+
     private static IHbdmRestApi futurePostV1 = new HbdmRestApiV1(URL_PREX, API_KEY, SECRET_KEY);
     private static int buyOrSell = 0;
     private static double macd1 = 0;
