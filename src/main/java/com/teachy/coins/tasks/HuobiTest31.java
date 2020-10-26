@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,8 +26,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HuobiTest31 {
 
-    private static final String API_KEY = "83b82319-vqgdf4gsga-ee719d6c-b0b2-002";
-    private static final String SECRET_KEY = "ae85e343-fb9df7fa-b7235f8c-8091-003";
+    private static final String API_KEY = "";
+    private static final String SECRET_KEY = "";
     private static final String URL_PREX = "https://api.btcgateway.pro1";
 
     private static IHbdmRestApi futureGetV1 = new HbdmRestApiV1(URL_PREX);
