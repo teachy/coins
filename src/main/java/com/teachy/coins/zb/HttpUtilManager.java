@@ -267,6 +267,7 @@ public class HttpUtilManager {
 		IdleConnectionMonitor();
 		HttpPost method = this.httpPostMethod(url);
 		method.setHeader("content-type","application/x-www-form-urlencoded");
+		method.setHeader("X-SITE-ID","1");
 		List<NameValuePair> valuePairs = this.convertMap2PostParams(params);
 		UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(valuePairs, Consts.UTF_8);
 		method.setEntity(urlEncodedFormEntity);
