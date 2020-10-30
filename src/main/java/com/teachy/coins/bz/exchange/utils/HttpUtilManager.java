@@ -90,7 +90,7 @@ public class HttpUtilManager {
 			}
 		}
 
-		System.out.print(url);
+//		System.out.print(url);
 
 		HttpRequestBase method = this.httpGetMethod(url);
 		method.setConfig(requestConfig);
@@ -117,8 +117,8 @@ public class HttpUtilManager {
 		UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(valuePairs, Consts.UTF_8);
 
 
-		System.out.print(url);
-		System.out.print(valuePairs);
+//		System.out.print(url);
+//		System.out.print(valuePairs);
 
 		request.setEntity(urlEncodedFormEntity);
 		request.setConfig(requestConfig);
